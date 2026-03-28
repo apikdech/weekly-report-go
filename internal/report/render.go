@@ -31,7 +31,9 @@ const reportTemplate = `# [Weekly Report: {{ .ReportName }}] {{ .Week.HeaderLabe
 - {{ .Title }} ({{ .Date }})
 {{ end }}
 ## **Key Metrics / OMTM**
-
+{{ if .KeyMetrics }}
+{{ .KeyMetrics }}
+{{ end }}
 ## **Next Actions**
 1. Continue implement admin dashboard features
 
@@ -49,6 +51,7 @@ type templateData struct {
 	SortedRepos      []*pipeline.RepoPRs
 	Events           []pipeline.CalendarEvent
 	OutOfOfficeBlock string
+	KeyMetrics       string
 }
 
 // Render produces the weekly report markdown string from ReportData.
@@ -82,6 +85,7 @@ func Render(data *pipeline.ReportData) (string, error) {
 		SortedRepos:      repos,
 		Events:           data.Events,
 		OutOfOfficeBlock: oooBlock,
+		KeyMetrics:       data.KeyMetrics,
 	}
 
 	var buf bytes.Buffer
