@@ -13,7 +13,7 @@ import (
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
 	"github.com/apikdech/gws-weekly-report/internal/report"
 	"github.com/apikdech/gws-weekly-report/internal/sources/calendar"
-	gchat "github.com/apikdech/gws-weekly-report/internal/sources/gchat"
+	"github.com/apikdech/gws-weekly-report/internal/sources/gchat"
 	gh "github.com/apikdech/gws-weekly-report/internal/sources/github"
 	"github.com/apikdech/gws-weekly-report/internal/sources/gmail"
 	"github.com/apikdech/gws-weekly-report/internal/uploader/drive"
