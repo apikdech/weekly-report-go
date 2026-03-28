@@ -82,11 +82,13 @@ func TestConfigLoadsGChatFields(t *testing.T) {
 }
 
 func TestLoad_MissingRequired(t *testing.T) {
-	os.Unsetenv("GITHUB_TOKEN")
-	os.Unsetenv("GITHUB_USERNAME")
-	os.Unsetenv("GWS_EMAIL_SENDER")
-	os.Unsetenv("REPORT_NAME")
-	os.Unsetenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE")
+	t.Setenv("GITHUB_TOKEN", "")
+	t.Setenv("GITHUB_USERNAME", "")
+	t.Setenv("GWS_EMAIL_SENDER", "")
+	t.Setenv("REPORT_NAME", "")
+	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "")
+	t.Setenv("GWS_CHAT_SPACES_ID", "")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "")
 
 	_, err := config.Load()
 	if err == nil {
