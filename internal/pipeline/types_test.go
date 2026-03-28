@@ -65,3 +65,10 @@ func TestWeekRange_HeaderLabel(t *testing.T) {
 		t.Errorf("HeaderLabel: want %q, got %q", want, got)
 	}
 }
+
+func TestReportDataHasKeyMetrics(t *testing.T) {
+	rd := pipeline.ReportData{KeyMetrics: "some metrics text"}
+	if rd.KeyMetrics != "some metrics text" {
+		t.Fatalf("expected KeyMetrics to be set, got %q", rd.KeyMetrics)
+	}
+}

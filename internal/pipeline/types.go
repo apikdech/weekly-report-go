@@ -40,6 +40,7 @@ type ReportData struct {
 	PRsByRepo        map[string]*RepoPRs // keyed by repo NameWithOwner
 	Events           []CalendarEvent
 	OutOfOfficeDates []string // sorted unique, formatted as "2 January 2006"
+	KeyMetrics       string   // raw text from Google Chat spaces bot message
 }
 
 // RepoPRs holds authored and reviewed PRs for a single repository.
