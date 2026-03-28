@@ -35,6 +35,12 @@ func TestLoad_AllRequiredPresent(t *testing.T) {
 	if cfg.GWSCredentialsFile != "/tmp/creds.json" {
 		t.Errorf("expected GWSCredentialsFile=/tmp/creds.json, got %q", cfg.GWSCredentialsFile)
 	}
+	if cfg.GWSChatSpacesID != "AAQAE4zqbX4" {
+		t.Errorf("expected GWSChatSpacesID=AAQAE4zqbX4, got %q", cfg.GWSChatSpacesID)
+	}
+	if cfg.GWSChatSenderName != "users/102650500894334129637" {
+		t.Errorf("expected GWSChatSenderName=users/102650500894334129637, got %q", cfg.GWSChatSenderName)
+	}
 }
 
 func TestLoad_Defaults(t *testing.T) {
