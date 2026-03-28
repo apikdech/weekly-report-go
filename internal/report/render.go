@@ -94,7 +94,7 @@ func Render(data *pipeline.ReportData) (string, error) {
 		SortedRepos:      repos,
 		Events:           data.Events,
 		OutOfOfficeBlock: oooBlock,
-		KeyMetrics:       data.KeyMetrics,
+		KeyMetrics:       formatKeyMetricsForMarkdown(data.KeyMetrics),
 		NextActionLines:  nextLines,
 	}
 
@@ -103,4 +103,57 @@ func Render(data *pipeline.ReportData) (string, error) {
 		return "", fmt.Errorf("execute template: %w", err)
 	}
 	return buf.String(), nil
+}
+
+// formatKeyMetricsForMarkdown adjusts raw Google Chat text so Markdown→Docs
+// conversion keeps structure: single newlines inside a block become hard line
+// breaks, blank lines stay paragraph breaks, and leading spaces become NBSP so
+// indentation is not stripped.
+func formatKeyMetricsForMarkdown(raw string) string {
+	raw = strings.ReplaceAll(strings.ReplaceAll(raw, "\r\n", "\n"), "\r", "\n")
+	if raw == "" {
+		return ""
+	}
+	lines := strings.Split(raw, "\n")
+	var paras [][]string
+	var cur []string
+	flush := func() {
+		if len(cur) > 0 {
+			paras = append(paras, cur)
+			cur = nil
+		}
+	}
+	for _, ln := range lines {
+		if ln == "" {
+			flush()
+		} else {
+			cur = append(cur, ln)
+		}
+	}
+	flush()
+
+	var b strings.Builder
+	for pi, para := range paras {
+		if pi > 0 {
+			b.WriteString("\n\n")
+		}
+		for li, line := range para {
+			if li > 0 {
+				b.WriteString("  \n")
+			}
+			b.WriteString(leadingSpacesToNbsp(line))
+		}
+	}
+	return b.String()
+}
+
+func leadingSpacesToNbsp(s string) string {
+	n := 0
+	for n < len(s) && s[n] == ' ' {
+		n++
+	}
+	if n == 0 {
+		return s
+	}
+	return strings.Repeat("\u00a0", n) + s[n:]
 }

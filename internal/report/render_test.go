@@ -103,6 +103,19 @@ func TestRender_KeyMetricsPresent(t *testing.T) {
 	}
 }
 
+func TestRender_KeyMetricsPreservesLineBreaksAndIndent(t *testing.T) {
+	data := testReportData()
+	data.KeyMetrics = "*Title*\n\n  Total Opened: 57\n    P0: 9\n\nNext section"
+	out, err := report.Render(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Hard line breaks (two spaces + newline) keep sibling lines out of one paragraph for Docs import.
+	if !strings.Contains(out, "*Title*\n\n\u00a0\u00a0Total Opened: 57  \n\u00a0\u00a0\u00a0\u00a0P0: 9\n\nNext section") {
+		t.Errorf("expected formatted KeyMetrics with hard breaks and NBSP indent\ngot:\n%s", out)
+	}
+}
+
 func TestRender_NextActions(t *testing.T) {
 	data := testReportData()
 	data.NextActions = []string{"Finish rollout", "Write design doc"}
