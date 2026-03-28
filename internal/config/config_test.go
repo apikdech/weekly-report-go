@@ -13,8 +13,8 @@ func TestLoad_AllRequiredPresent(t *testing.T) {
 	t.Setenv("GWS_EMAIL_SENDER", "agent@example.com")
 	t.Setenv("REPORT_NAME", "Test User")
 	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
-	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
-	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
+	t.Setenv("GWS_CHAT_SPACES_ID", "test-space-id")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "users/test-user-id")
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -35,11 +35,11 @@ func TestLoad_AllRequiredPresent(t *testing.T) {
 	if cfg.GWSCredentialsFile != "/tmp/creds.json" {
 		t.Errorf("expected GWSCredentialsFile=/tmp/creds.json, got %q", cfg.GWSCredentialsFile)
 	}
-	if cfg.GWSChatSpacesID != "AAQAE4zqbX4" {
-		t.Errorf("expected GWSChatSpacesID=AAQAE4zqbX4, got %q", cfg.GWSChatSpacesID)
+	if cfg.GWSChatSpacesID != "test-space-id" {
+		t.Errorf("expected GWSChatSpacesID=test-space-id, got %q", cfg.GWSChatSpacesID)
 	}
-	if cfg.GWSChatSenderName != "users/102650500894334129637" {
-		t.Errorf("expected GWSChatSenderName=users/102650500894334129637, got %q", cfg.GWSChatSenderName)
+	if cfg.GWSChatSenderName != "users/test-user-id" {
+		t.Errorf("expected GWSChatSenderName=users/test-user-id, got %q", cfg.GWSChatSenderName)
 	}
 }
 
@@ -49,8 +49,8 @@ func TestLoad_Defaults(t *testing.T) {
 	t.Setenv("GWS_EMAIL_SENDER", "agent@example.com")
 	t.Setenv("REPORT_NAME", "Test User")
 	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
-	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
-	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
+	t.Setenv("GWS_CHAT_SPACES_ID", "test-space-id")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "users/test-user-id")
 	os.Unsetenv("REPORT_TIMEZONE")
 	os.Unsetenv("TEMP_DIR")
 
@@ -63,27 +63,6 @@ func TestLoad_Defaults(t *testing.T) {
 	}
 	if cfg.TempDir != "/tmp" {
 		t.Errorf("expected default TempDir=/tmp, got %q", cfg.TempDir)
-	}
-}
-
-func TestConfigLoadsGChatFields(t *testing.T) {
-	t.Setenv("GITHUB_TOKEN", "tok")
-	t.Setenv("GITHUB_USERNAME", "user")
-	t.Setenv("GWS_EMAIL_SENDER", "sender@example.com")
-	t.Setenv("REPORT_NAME", "Test User")
-	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
-	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
-	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
-
-	cfg, err := config.Load()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if cfg.GWSChatSpacesID != "AAQAE4zqbX4" {
-		t.Errorf("GWSChatSpacesID: got %q, want %q", cfg.GWSChatSpacesID, "AAQAE4zqbX4")
-	}
-	if cfg.GWSChatSenderName != "users/102650500894334129637" {
-		t.Errorf("GWSChatSenderName: got %q, want %q", cfg.GWSChatSenderName, "users/102650500894334129637")
 	}
 }
 
