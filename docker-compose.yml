@@ -1,0 +1,7 @@
+services:
+  reporter:
+    build: .
+    env_file: .env
+    volumes:
+      - ./credentials.json:/run/secrets/gws-credentials:ro
+    restart: "no"
