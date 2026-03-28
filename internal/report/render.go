@@ -36,7 +36,9 @@ const reportTemplate = `# [Weekly Report: {{ .ReportName }}] {{ .Week.HeaderLabe
 {{ .KeyMetrics }}
 {{ end }}
 ## **Next Actions**
-1. Continue implement admin dashboard features
+{{- range .NextActionLines }}
+{{ . }}
+{{- end }}
 
 ## **Technology, Business, Communication, Leadership, Management & Marketing**
 
@@ -53,6 +55,7 @@ type templateData struct {
 	Events           []pipeline.CalendarEvent
 	OutOfOfficeBlock string
 	KeyMetrics       string
+	NextActionLines  []string // "1. ...", "2. ..."
 }
 
 // Render produces the weekly report markdown string from ReportData.
@@ -80,6 +83,11 @@ func Render(data *pipeline.ReportData) (string, error) {
 		oooBlock = strings.Join(lines, "\n")
 	}
 
+	nextLines := make([]string, len(data.NextActions))
+	for i, a := range data.NextActions {
+		nextLines[i] = fmt.Sprintf("%d. %s", i+1, strings.TrimSpace(a))
+	}
+
 	td := templateData{
 		ReportName:       data.ReportName,
 		Week:             data.Week,
@@ -87,6 +95,7 @@ func Render(data *pipeline.ReportData) (string, error) {
 		Events:           data.Events,
 		OutOfOfficeBlock: oooBlock,
 		KeyMetrics:       data.KeyMetrics,
+		NextActionLines:  nextLines,
 	}
 
 	var buf bytes.Buffer

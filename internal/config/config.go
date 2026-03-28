@@ -17,6 +17,8 @@ type Config struct {
 	GWSChatSenderName  string // sender.name to filter, e.g. "users/102650500894334129637"
 	ReportTimezone     string
 	TempDir            string
+	// NextActions are weekly "next action" bullets, from REPORT_NEXT_ACTIONS (comma-separated).
+	NextActions []string
 }
 
 // Load reads configuration from environment variables.
@@ -40,6 +42,7 @@ func Load() (*Config, error) {
 	if cfg.TempDir == "" {
 		cfg.TempDir = "/tmp"
 	}
+	cfg.NextActions = parseCommaSeparated(os.Getenv("REPORT_NEXT_ACTIONS"))
 
 	type requiredVar struct {
 		name string
@@ -65,4 +68,23 @@ func Load() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+// parseCommaSeparated splits on commas, trims spaces, and drops empty segments.
+func parseCommaSeparated(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
 }

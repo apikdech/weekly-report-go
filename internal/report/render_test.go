@@ -103,6 +103,21 @@ func TestRender_KeyMetricsPresent(t *testing.T) {
 	}
 }
 
+func TestRender_NextActions(t *testing.T) {
+	data := testReportData()
+	data.NextActions = []string{"Finish rollout", "Write design doc"}
+	out, err := report.Render(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(out, "1. Finish rollout") {
+		t.Errorf("missing first next action\ngot:\n%s", out)
+	}
+	if !strings.Contains(out, "2. Write design doc") {
+		t.Errorf("missing second next action\ngot:\n%s", out)
+	}
+}
+
 func TestRender_KeyMetricsEmpty(t *testing.T) {
 	data := testReportData()
 	data.KeyMetrics = ""

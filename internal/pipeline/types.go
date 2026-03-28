@@ -41,6 +41,7 @@ type ReportData struct {
 	Events           []CalendarEvent
 	OutOfOfficeDates []string // sorted unique, formatted as "2 January 2006"
 	KeyMetrics       string   // raw text from Google Chat spaces bot message
+	NextActions      []string // from REPORT_NEXT_ACTIONS (comma-separated), rendered as numbered list
 }
 
 // RepoPRs holds authored and reviewed PRs for a single repository.

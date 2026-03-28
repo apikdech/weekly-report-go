@@ -57,9 +57,10 @@ func run() error {
 
 	// 5. Run pipeline
 	reportData := &pipeline.ReportData{
-		ReportName: cfg.ReportName,
-		Week:       week,
-		PRsByRepo:  make(map[string]*pipeline.RepoPRs),
+		ReportName:  cfg.ReportName,
+		Week:        week,
+		PRsByRepo:   make(map[string]*pipeline.RepoPRs),
+		NextActions: cfg.NextActions,
 	}
 	runner := pipeline.NewRunner([]pipeline.DataSource{gmailSrc, githubSrc, calendarSrc, gchatSrc})
 	if err := runner.Run(ctx, reportData); err != nil {
