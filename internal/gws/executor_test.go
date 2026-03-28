@@ -16,7 +16,10 @@ func TestExecutor_Run_EchoBinary(t *testing.T) {
 		t.Skip("echo not available")
 	}
 
-	tmpCreds, _ := os.CreateTemp("", "creds*.json")
+	tmpCreds, err := os.CreateTemp("", "creds*.json")
+	if err != nil {
+		t.Fatalf("failed to create temp creds file: %v", err)
+	}
 	defer os.Remove(tmpCreds.Name())
 
 	ex := gws.NewExecutor(echoBin, tmpCreds.Name())
@@ -36,7 +39,10 @@ func TestExecutor_Run_PropagatesError(t *testing.T) {
 		t.Skip("false not available")
 	}
 
-	tmpCreds, _ := os.CreateTemp("", "creds*.json")
+	tmpCreds, err := os.CreateTemp("", "creds*.json")
+	if err != nil {
+		t.Fatalf("failed to create temp creds file: %v", err)
+	}
 	defer os.Remove(tmpCreds.Name())
 
 	ex := gws.NewExecutor(falseBin, tmpCreds.Name())
