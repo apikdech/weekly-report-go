@@ -31,7 +31,8 @@ const reportTemplate = `# [Weekly Report: {{ .ReportName }}] {{ .Week.HeaderLabe
 - {{ .Title }} ({{ .Date }})
 {{ end }}
 ## **Key Metrics / OMTM**
-{{ if .KeyMetrics }}
+{{- if .KeyMetrics }}
+
 {{ .KeyMetrics }}
 {{ end }}
 ## **Next Actions**

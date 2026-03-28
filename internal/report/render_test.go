@@ -91,6 +91,33 @@ func TestRender_OutOfOfficeNumberedDates(t *testing.T) {
 	}
 }
 
+func TestRender_KeyMetricsPresent(t *testing.T) {
+	data := testReportData()
+	data.KeyMetrics = "DAU: 1000"
+	out, err := report.Render(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(out, "DAU: 1000") {
+		t.Errorf("output missing KeyMetrics text\ngot:\n%s", out)
+	}
+}
+
+func TestRender_KeyMetricsEmpty(t *testing.T) {
+	data := testReportData()
+	data.KeyMetrics = ""
+	out, err := report.Render(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(out, "## **Key Metrics / OMTM**") {
+		t.Errorf("output missing Key Metrics heading\ngot:\n%s", out)
+	}
+	if strings.Contains(out, "DAU:") {
+		t.Errorf("output should not contain placeholder KeyMetrics text\ngot:\n%s", out)
+	}
+}
+
 func TestRender_ContainsEmptySections(t *testing.T) {
 	data := testReportData()
 	out, err := report.Render(data)
