@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -38,21 +37,25 @@ func Load() (*Config, error) {
 		cfg.TempDir = "/tmp"
 	}
 
-	var missing []string
-	required := map[string]string{
-		"GITHUB_TOKEN":                          cfg.GitHubToken,
-		"GITHUB_USERNAME":                       cfg.GitHubUsername,
-		"GWS_EMAIL_SENDER":                      cfg.GWSEmailSender,
-		"REPORT_NAME":                           cfg.ReportName,
-		"GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE": cfg.GWSCredentialsFile,
+	type requiredVar struct {
+		name string
+		val  string
 	}
-	for name, val := range required {
-		if val == "" {
-			missing = append(missing, name)
+	required := []requiredVar{
+		{"GITHUB_TOKEN", cfg.GitHubToken},
+		{"GITHUB_USERNAME", cfg.GitHubUsername},
+		{"GWS_EMAIL_SENDER", cfg.GWSEmailSender},
+		{"REPORT_NAME", cfg.ReportName},
+		{"GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", cfg.GWSCredentialsFile},
+	}
+	var missing []string
+	for _, r := range required {
+		if r.val == "" {
+			missing = append(missing, r.name)
 		}
 	}
 	if len(missing) > 0 {
-		return nil, errors.New(fmt.Sprintf("missing required environment variables: %s", strings.Join(missing, ", ")))
+		return nil, fmt.Errorf("missing required environment variables: %s", strings.Join(missing, ", "))
 	}
 
 	return cfg, nil
