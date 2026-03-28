@@ -3,6 +3,7 @@ package gchat_test
 import (
 	"testing"
 
+	"github.com/apikdech/gws-weekly-report/internal/pipeline"
 	"github.com/apikdech/gws-weekly-report/internal/sources/gchat"
 )
 
@@ -64,5 +65,40 @@ func TestPickLatestBySender_InvalidJSON(t *testing.T) {
 	_, err := gchat.PickLatestBySender([]byte(`not json`), "users/x")
 	if err == nil {
 		t.Fatal("expected error for invalid JSON, got nil")
+	}
+}
+
+func TestSource_ContributeWithoutFetch(t *testing.T) {
+	s := gchat.NewSource(nil, "test-space", "users/test")
+	report := &pipeline.ReportData{}
+	err := s.Contribute(report)
+	if err == nil {
+		t.Fatal("expected error when Contribute called before Fetch, got nil")
+	}
+}
+
+func TestPickLatestBySender_UnparseableTimestampSkipped(t *testing.T) {
+	data := []byte(`{
+  "messages": [
+    {
+      "name": "spaces/X/messages/bad",
+      "createTime": "not-a-time",
+      "sender": {"name": "users/bot"},
+      "text": "bad time message"
+    },
+    {
+      "name": "spaces/X/messages/good",
+      "createTime": "2026-03-27T08:00:00Z",
+      "sender": {"name": "users/bot"},
+      "text": "good message"
+    }
+  ]
+}`)
+	text, err := gchat.PickLatestBySender(data, "users/bot")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if text != "good message" {
+		t.Errorf("got %q, want %q", text, "good message")
 	}
 }
