@@ -13,6 +13,8 @@ func TestLoad_AllRequiredPresent(t *testing.T) {
 	t.Setenv("GWS_EMAIL_SENDER", "agent@example.com")
 	t.Setenv("REPORT_NAME", "Test User")
 	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
+	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -41,6 +43,8 @@ func TestLoad_Defaults(t *testing.T) {
 	t.Setenv("GWS_EMAIL_SENDER", "agent@example.com")
 	t.Setenv("REPORT_NAME", "Test User")
 	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
+	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
 	os.Unsetenv("REPORT_TIMEZONE")
 	os.Unsetenv("TEMP_DIR")
 
@@ -53,6 +57,27 @@ func TestLoad_Defaults(t *testing.T) {
 	}
 	if cfg.TempDir != "/tmp" {
 		t.Errorf("expected default TempDir=/tmp, got %q", cfg.TempDir)
+	}
+}
+
+func TestConfigLoadsGChatFields(t *testing.T) {
+	t.Setenv("GITHUB_TOKEN", "tok")
+	t.Setenv("GITHUB_USERNAME", "user")
+	t.Setenv("GWS_EMAIL_SENDER", "sender@example.com")
+	t.Setenv("REPORT_NAME", "Test User")
+	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
+	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.GWSChatSpacesID != "AAQAE4zqbX4" {
+		t.Errorf("GWSChatSpacesID: got %q, want %q", cfg.GWSChatSpacesID, "AAQAE4zqbX4")
+	}
+	if cfg.GWSChatSenderName != "users/102650500894334129637" {
+		t.Errorf("GWSChatSenderName: got %q, want %q", cfg.GWSChatSenderName, "users/102650500894334129637")
 	}
 }
 

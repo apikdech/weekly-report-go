@@ -13,6 +13,8 @@ type Config struct {
 	GWSEmailSender     string
 	ReportName         string
 	GWSCredentialsFile string
+	GWSChatSpacesID    string // Google Chat space ID, e.g. "AAQAE4zqbX4"
+	GWSChatSenderName  string // sender.name to filter, e.g. "users/102650500894334129637"
 	ReportTimezone     string
 	TempDir            string
 }
@@ -26,6 +28,8 @@ func Load() (*Config, error) {
 		GWSEmailSender:     os.Getenv("GWS_EMAIL_SENDER"),
 		ReportName:         os.Getenv("REPORT_NAME"),
 		GWSCredentialsFile: os.Getenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE"),
+		GWSChatSpacesID:    os.Getenv("GWS_CHAT_SPACES_ID"),
+		GWSChatSenderName:  os.Getenv("GWS_CHAT_SENDER_NAME"),
 		ReportTimezone:     os.Getenv("REPORT_TIMEZONE"),
 		TempDir:            os.Getenv("TEMP_DIR"),
 	}
@@ -47,6 +51,8 @@ func Load() (*Config, error) {
 		{"GWS_EMAIL_SENDER", cfg.GWSEmailSender},
 		{"REPORT_NAME", cfg.ReportName},
 		{"GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", cfg.GWSCredentialsFile},
+		{"GWS_CHAT_SPACES_ID", cfg.GWSChatSpacesID},
+		{"GWS_CHAT_SENDER_NAME", cfg.GWSChatSenderName},
 	}
 	var missing []string
 	for _, r := range required {
