@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/apikdech/gws-weekly-report/internal/gws"
@@ -43,6 +44,7 @@ func PickLatestBySender(data []byte, senderName string) (string, error) {
 			// Fall back to RFC3339 without nanoseconds
 			t, err = time.Parse(time.RFC3339, msg.CreateTime)
 			if err != nil {
+				log.Printf("[gchat] skipping message %q: unparseable createTime %q", msg.Name, msg.CreateTime)
 				continue
 			}
 		}
@@ -60,6 +62,7 @@ type Source struct {
 	spacesID   string
 	senderName string
 	keyMetrics string
+	fetched    bool
 }
 
 // NewSource creates a GChat Source.
@@ -91,11 +94,15 @@ func (s *Source) Fetch(ctx context.Context, week pipeline.WeekRange) error {
 		return err
 	}
 	s.keyMetrics = text
+	s.fetched = true
 	return nil
 }
 
 // Contribute sets KeyMetrics on the report. A missing message is not an error.
 func (s *Source) Contribute(report *pipeline.ReportData) error {
+	if !s.fetched {
+		return fmt.Errorf("gchat source: Contribute called before Fetch")
+	}
 	report.KeyMetrics = s.keyMetrics
 	return nil
 }
