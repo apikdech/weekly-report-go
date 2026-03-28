@@ -73,6 +73,24 @@ func TestRender_ContainsCalendarEvent(t *testing.T) {
 	}
 }
 
+func TestRender_OutOfOfficeNumberedDates(t *testing.T) {
+	data := testReportData()
+	data.OutOfOfficeDates = []string{"23 March 2026", "24 March 2026"}
+	out, err := report.Render(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(out, "1. 23 March 2026") {
+		t.Errorf("missing first OOO line\ngot:\n%s", out)
+	}
+	if !strings.Contains(out, "2. 24 March 2026") {
+		t.Errorf("missing second OOO line\ngot:\n%s", out)
+	}
+	if strings.Contains(out, "March 2026\n\n2.") {
+		t.Errorf("unexpected blank line between OOO items\ngot:\n%s", out)
+	}
+}
+
 func TestRender_ContainsEmptySections(t *testing.T) {
 	data := testReportData()
 	out, err := report.Render(data)
@@ -84,7 +102,7 @@ func TestRender_ContainsEmptySections(t *testing.T) {
 		"## **Key Metrics / OMTM**",
 		"## **Next Actions**",
 		"## **Technology, Business, Communication, Leadership, Management & Marketing**",
-		"## Out of Office",
+		"## **Out of Office**",
 	} {
 		if !strings.Contains(out, section) {
 			t.Errorf("output missing section %q\ngot:\n%s", section, out)

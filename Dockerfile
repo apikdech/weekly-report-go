@@ -17,7 +17,7 @@ RUN apk add --no-cache wget ca-certificates \
   && chmod +x /usr/local/bin/gws
 
 # Stage 3: Distroless runtime (no shell, no package manager)
-FROM gcr.io/distroless/base-debian12
+FROM gcr.io/distroless/base-debian12@sha256:937c7eaaf6f3f2d38a1f8c4aeff326f0c56e4593ea152e9e8f74d976dde52f56
 COPY --from=go-builder /app/reporter /app/reporter
 COPY --from=gws-downloader /usr/local/bin/gws /usr/local/bin/gws
 ENTRYPOINT ["/app/reporter"]

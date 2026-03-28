@@ -34,11 +34,12 @@ func (w WeekRange) HeaderLabel() string {
 
 // ReportData holds all collected data used to render the weekly report.
 type ReportData struct {
-	ReportName string
-	Week       WeekRange
-	DocID      string
-	PRsByRepo  map[string]*RepoPRs // keyed by repo NameWithOwner
-	Events     []CalendarEvent
+	ReportName       string
+	Week             WeekRange
+	DocID            string
+	PRsByRepo        map[string]*RepoPRs // keyed by repo NameWithOwner
+	Events           []CalendarEvent
+	OutOfOfficeDates []string // sorted unique, formatted as "2 January 2006"
 }
 
 // RepoPRs holds authored and reviewed PRs for a single repository.

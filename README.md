@@ -1,4 +1,4 @@
-# gws-weekly-report
+# GWS Weekly Report
 
 A Go tool that automatically generates your weekly report and uploads it to Google Docs. Runs as a Docker container via crontab on a VPS.
 

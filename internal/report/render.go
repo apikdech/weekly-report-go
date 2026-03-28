@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
@@ -36,14 +37,18 @@ const reportTemplate = `# [Weekly Report: {{ .ReportName }}] {{ .Week.HeaderLabe
 
 ## **Technology, Business, Communication, Leadership, Management & Marketing**
 
-## Out of Office
-`
+## **Out of Office**
+{{- if .OutOfOfficeBlock }}
+
+{{ .OutOfOfficeBlock -}}
+{{- end }}`
 
 type templateData struct {
-	ReportName  string
-	Week        pipeline.WeekRange
-	SortedRepos []*pipeline.RepoPRs
-	Events      []pipeline.CalendarEvent
+	ReportName       string
+	Week             pipeline.WeekRange
+	SortedRepos      []*pipeline.RepoPRs
+	Events           []pipeline.CalendarEvent
+	OutOfOfficeBlock string
 }
 
 // Render produces the weekly report markdown string from ReportData.
@@ -62,11 +67,21 @@ func Render(data *pipeline.ReportData) (string, error) {
 		return repos[i].RepoName < repos[j].RepoName
 	})
 
+	var oooBlock string
+	if n := len(data.OutOfOfficeDates); n > 0 {
+		lines := make([]string, n)
+		for i, d := range data.OutOfOfficeDates {
+			lines[i] = fmt.Sprintf("%d. %s", i+1, d)
+		}
+		oooBlock = strings.Join(lines, "\n")
+	}
+
 	td := templateData{
-		ReportName:  data.ReportName,
-		Week:        data.Week,
-		SortedRepos: repos,
-		Events:      data.Events,
+		ReportName:       data.ReportName,
+		Week:             data.Week,
+		SortedRepos:      repos,
+		Events:           data.Events,
+		OutOfOfficeBlock: oooBlock,
 	}
 
 	var buf bytes.Buffer
