@@ -31,8 +31,7 @@
 ## **Technology, Business, Communication, Leadership, Management & Marketing**
 {{ if .TechnologyHighlights -}}
 {{ range $i, $h := .TechnologyHighlights -}}
-{{ add $i 1 }}. [{{ $h.Title }}]({{ $h.URL }})
-
+1. [{{ $h.Title }}]({{ $h.URL }}) <br/>
 {{ formatTechHighlightBody $h.Highlights }}
 
 {{ end }}

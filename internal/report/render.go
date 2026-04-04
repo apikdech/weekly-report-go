@@ -19,7 +19,6 @@ var reportTmpl = mustParseReportTemplate()
 
 func mustParseReportTemplate() *template.Template {
 	t := template.New("report.tmpl").Funcs(template.FuncMap{
-		"add": func(a, b int) int { return a + b },
 		"formatTechHighlightBody": formatTechHighlightBody,
 	})
 	t, err := t.ParseFS(reportTemplateFS, "report.tmpl")
@@ -148,8 +147,6 @@ func formatTechHighlightBody(raw string) string {
 	const indent = "   " // content column under "N. " for list continuation
 	lines := strings.Split(raw, "\n")
 	var b strings.Builder
-	var wroteText bool
-	var wroteBlankBeforeBullets bool
 	for _, line := range lines {
 		line = strings.TrimRight(line, " \t")
 		trimmed := strings.TrimSpace(line)
@@ -157,15 +154,6 @@ func formatTechHighlightBody(raw string) string {
 			continue
 		}
 		md := techHighlightLineToMarkdown(trimmed)
-		isBullet := strings.HasPrefix(md, "- ")
-		if isBullet && wroteText && !wroteBlankBeforeBullets {
-			b.WriteString(indent)
-			b.WriteByte('\n')
-			wroteBlankBeforeBullets = true
-		}
-		if !isBullet {
-			wroteText = true
-		}
 		b.WriteString(indent)
 		b.WriteString(md)
 		b.WriteByte('\n')

@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -56,7 +58,7 @@ func (s *Source) analyzeWithGemini(ctx context.Context, articles []HNArticle) ([
 		s.model, s.apiKey,
 	)
 
-	log.Printf("[hackernews] Sending request to Gemini API: %s", url)
+	log.Printf("[hackernews] Sending request to Gemini API with model %s", s.model)
 	// Create request
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(reqJSON))
 	if err != nil {
@@ -73,6 +75,11 @@ func (s *Source) analyzeWithGemini(ctx context.Context, articles []HNArticle) ([
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 8192))
+		body := strings.TrimSpace(string(b))
+		if body != "" {
+			return nil, fmt.Errorf("Gemini API returned status %d: %s", resp.StatusCode, body)
+		}
 		return nil, fmt.Errorf("Gemini API returned status %d", resp.StatusCode)
 	}
 
