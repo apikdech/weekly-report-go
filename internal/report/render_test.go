@@ -146,6 +146,38 @@ func TestRender_KeyMetricsEmpty(t *testing.T) {
 	}
 }
 
+func TestRender_TechnologyHighlightsMarkdownStructure(t *testing.T) {
+	data := testReportData()
+	data.TechnologyHighlights = []pipeline.TechHighlight{
+		{
+			Title: "First article",
+			URL:   "https://example.com/a",
+			Highlights: "Summary line one.\n" +
+				"• Bullet A\n" +
+				"• Bullet B",
+		},
+		{
+			Title:      "Second article",
+			URL:        "https://example.com/b",
+			Highlights: "Only summary, no bullets.",
+		},
+	}
+	out, err := report.Render(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want1 := "1. [First article](https://example.com/a)\n\n   Summary line one.\n   \n   - Bullet A\n   - Bullet B"
+	if !strings.Contains(out, want1) {
+		t.Errorf("expected first highlight block\ngot:\n%s", out)
+	}
+	if !strings.Contains(out, "2. [Second article](https://example.com/b)\n\n   Only summary, no bullets.") {
+		t.Errorf("expected second highlight with correct numbering and indent\ngot:\n%s", out)
+	}
+	if strings.Count(out, "1. [First article]") != 1 || strings.Count(out, "1. [Second article]") != 0 {
+		t.Errorf("expected explicit 1/2 numbering, not repeated 1.\ngot:\n%s", out)
+	}
+}
+
 func TestRender_ContainsEmptySections(t *testing.T) {
 	data := testReportData()
 	out, err := report.Render(data)

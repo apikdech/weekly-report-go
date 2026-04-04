@@ -5,26 +5,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"time"
 )
 
-const geminiPrompt = `Act as a technical research assistant for a Principal Software Development Engineer. I am providing a JSON list of technical articles from Hacker News with their full URLs. Please navigate to the URLs, read the content, and extract the hardcore engineering value. Skip the lifestyle, political, or generic news articles and focus strictly on the technical ones.
+const geminiPrompt = `Act as a technical research assistant for a Principal Software Development Engineer. I am providing a JSON list of technical articles from Hacker News with their full URLs. Navigate to the URLs, read the content, and summarize what matters for engineering readers. Skip lifestyle, political, or generic news; include only articles with real technical substance.
 
-For each technical article, provide:
-1. Core Concept: What is the primary problem being solved or concept being introduced?
-2. Architecture & Trade-offs: Are there any specific system design patterns, architectural decisions, scaling implications, or performance trade-offs discussed?
-3. Tech Stack Relevance: Highlight any mentions of specific languages, infrastructure, or tools (paying special attention to things like Java, Go, Docker, or Cloud platforms).
-4. Strategic Takeaway: One actionable insight or strategic consideration a Principal Engineer should take away from this.
+For each included article, write "highlights" as plain text with line breaks:
+- First line(s): a tight summary (2-4 sentences max) of what the piece is about and why it matters technically.
+- Then 2-5 short bullet lines (each line starting with "• " or "- ") with the most interesting or useful details—e.g. approach, trade-offs, tools, numbers, or a takeaway. No filler; prefer specifics over generic praise.
 
-Return ONLY the top 3 technical articles in this exact JSON format:
+Keep the whole "highlights" field scannable: avoid long paragraphs and numbered section headers like "Core Concept".
+
+Return the technical articles in this exact JSON format:
 {
   "articles": [
     {
       "title": "string",
       "url": "string",
-      "highlights": "string with line breaks between the 4 analysis points"
+      "highlights": "multi-line string: brief summary, then bullet points"
     }
   ]
 }`
@@ -55,6 +56,7 @@ func (s *Source) analyzeWithGemini(ctx context.Context, articles []HNArticle) ([
 		s.model, s.apiKey,
 	)
 
+	log.Printf("[hackernews] Sending request to Gemini API: %s", url)
 	// Create request
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(reqJSON))
 	if err != nil {
@@ -93,6 +95,8 @@ func (s *Source) analyzeWithGemini(ctx context.Context, articles []HNArticle) ([
 	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
 		return nil, fmt.Errorf("parse Gemini result: %w", err)
 	}
+
+	log.Printf("[hackernews] Found %d articles", len(result.Articles))
 
 	// Convert to TechHighlight slice
 	highlights := make([]TechHighlight, 0, len(result.Articles))

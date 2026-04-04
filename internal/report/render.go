@@ -18,7 +18,11 @@ var reportTemplateFS embed.FS
 var reportTmpl = mustParseReportTemplate()
 
 func mustParseReportTemplate() *template.Template {
-	t, err := template.ParseFS(reportTemplateFS, "report.tmpl")
+	t := template.New("report.tmpl").Funcs(template.FuncMap{
+		"add": func(a, b int) int { return a + b },
+		"formatTechHighlightBody": formatTechHighlightBody,
+	})
+	t, err := t.ParseFS(reportTemplateFS, "report.tmpl")
 	if err != nil {
 		panic("report: parse embedded report.tmpl: " + err.Error())
 	}
@@ -130,4 +134,56 @@ func leadingSpacesToNbsp(s string) string {
 		return s
 	}
 	return strings.Repeat("\u00a0", n) + s[n:]
+}
+
+// formatTechHighlightBody indents highlight text so Markdown parsers (including
+// Google Docs import) keep the summary and bullets inside the same ordered-list
+// item. Unindented lines after "N. [title](url)" close the list and break numbering.
+func formatTechHighlightBody(raw string) string {
+	raw = strings.ReplaceAll(strings.ReplaceAll(raw, "\r\n", "\n"), "\r", "\n")
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return ""
+	}
+	const indent = "   " // content column under "N. " for list continuation
+	lines := strings.Split(raw, "\n")
+	var b strings.Builder
+	var wroteText bool
+	var wroteBlankBeforeBullets bool
+	for _, line := range lines {
+		line = strings.TrimRight(line, " \t")
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+		md := techHighlightLineToMarkdown(trimmed)
+		isBullet := strings.HasPrefix(md, "- ")
+		if isBullet && wroteText && !wroteBlankBeforeBullets {
+			b.WriteString(indent)
+			b.WriteByte('\n')
+			wroteBlankBeforeBullets = true
+		}
+		if !isBullet {
+			wroteText = true
+		}
+		b.WriteString(indent)
+		b.WriteString(md)
+		b.WriteByte('\n')
+	}
+	return strings.TrimRight(b.String(), "\n")
+}
+
+func techHighlightLineToMarkdown(s string) string {
+	switch {
+	case strings.HasPrefix(s, "• "):
+		return "- " + s[len("• "):]
+	case strings.HasPrefix(s, "•"):
+		return "- " + strings.TrimSpace(s[len("•"):])
+	case strings.HasPrefix(s, "- "):
+		return s
+	case strings.HasPrefix(s, "* "):
+		return "- " + s[2:]
+	default:
+		return s
+	}
 }

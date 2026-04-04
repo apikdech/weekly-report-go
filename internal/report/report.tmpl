@@ -30,10 +30,10 @@
 
 ## **Technology, Business, Communication, Leadership, Management & Marketing**
 {{ if .TechnologyHighlights -}}
-### Technology Highlights (Top HN Articles)
-{{ range .TechnologyHighlights -}}
-1. [{{ .Title }}]({{ .URL }})
-{{ .Highlights }}
+{{ range $i, $h := .TechnologyHighlights -}}
+{{ add $i 1 }}. [{{ $h.Title }}]({{ $h.URL }})
+
+{{ formatTechHighlightBody $h.Highlights }}
 
 {{ end }}
 {{ end -}}

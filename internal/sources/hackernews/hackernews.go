@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
@@ -64,12 +65,18 @@ func (s *Source) fetchHNArticles(ctx context.Context, week pipeline.WeekRange) (
 	startUnix := week.Start.Unix()
 	endUnix := week.End.Unix()
 
-	url := fmt.Sprintf(
-		"https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>%d,created_at_i<%d&hitsPerPage=15",
-		startUnix, endUnix,
-	)
+	u, err := url.Parse("https://hn.algolia.com/api/v1/search")
+	if err != nil {
+		return nil, fmt.Errorf("parse hn api base url: %w", err)
+	}
+	q := u.Query()
+	q.Set("tags", "story")
+	q.Set("numericFilters", fmt.Sprintf("created_at_i>%d,created_at_i<%d", startUnix, endUnix))
+	q.Set("hitsPerPage", "15")
+	u.RawQuery = q.Encode()
+	apiURL := u.String()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
