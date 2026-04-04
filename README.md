@@ -126,19 +126,83 @@ Add this to the VPS crontab (`crontab -e`) to run every Monday at 09:00:
 | `GWS_EMAIL_SENDER` | Yes | — | Email address that sends the weekly report prompt |
 | `REPORT_NAME` | Yes | — | Your full name as it appears in the email subject |
 | `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE` | Yes | — | Path to the exported gws credentials JSON inside the container |
+| `LLM_PROVIDER` | No | `gemini` | LLM provider for Technology Highlights: `gemini`, `openai`, `anthropic` |
+| `LLM_API_KEY` | No | — | API key for the selected LLM provider |
+| `LLM_MODEL` | No | `gemini-3-flash` | Model name (provider-specific, see LLM Configuration section) |
 | `REPORT_TIMEZONE` | No | `UTC` | Timezone for week range calculation (e.g. `Asia/Jakarta`) |
 | `TEMP_DIR` | No | `/tmp` | Directory for the temporary `report.md` file |
 | `GWS_BIN_PATH` | No | `gws` | Path to the gws binary (resolved from `PATH` by default) |
 
-### Optional Environment Variables
+## LLM Configuration (for Technology Highlights)
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GEMINI_API_KEY` | Google Gemini API key for technology section analysis | (empty - section skipped) |
-| `GEMINI_MODEL` | Gemini model to use for article analysis | `gemini-3-flash` |
-| `REPORT_TIMEZONE` | Timezone for report date calculations | `UTC` |
-| `TEMP_DIR` | Directory for temporary report files | `/tmp` |
-| `REPORT_NEXT_ACTIONS` | Comma-separated list of next actions | (empty) |
+The application supports multiple LLM providers via the [any-llm-go](https://github.com/mozilla-ai/any-llm-go) library. Configure via environment variables:
+
+### Environment Variables
+
+```bash
+# Provider selection: gemini | openai | anthropic (default: gemini)
+LLM_PROVIDER=gemini
+
+# API key for the selected provider
+LLM_API_KEY=your-api-key-here
+
+# Model name (provider-specific)
+# Gemini: gemini-3-flash, gemini-2.5-pro, gemini-2.0-flash, etc.
+# OpenAI: gpt-4, gpt-3.5-turbo, gpt-4o, etc.
+# Anthropic: claude-3-5-sonnet-20241022, claude-3-opus, etc.
+LLM_MODEL=gemini-3-flash
+```
+
+### Provider Examples
+
+**Google Gemini (default):**
+```bash
+LLM_PROVIDER=gemini
+LLM_API_KEY=your-gemini-key
+LLM_MODEL=gemini-3-flash
+```
+
+**OpenAI:**
+```bash
+LLM_PROVIDER=openai
+LLM_API_KEY=your-openai-key
+LLM_MODEL=gpt-4
+```
+
+**Anthropic Claude:**
+```bash
+LLM_PROVIDER=anthropic
+LLM_API_KEY=your-anthropic-key
+LLM_MODEL=claude-3-5-sonnet-20241022
+```
+
+**OpenRouter (Claude, Llama, etc.):**
+```bash
+LLM_PROVIDER=openai
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+LLM_API_KEY=your-openrouter-key
+LLM_MODEL=anthropic/claude-3.5-sonnet
+```
+
+**Fireworks.ai:**
+```bash
+LLM_PROVIDER=openai
+OPENAI_BASE_URL=https://api.fireworks.ai/inference/v1
+LLM_API_KEY=your-fireworks-key
+LLM_MODEL=accounts/fireworks/models/llama-v3p1-70b-instruct
+```
+
+**Kimi:**
+```bash
+LLM_PROVIDER=openai
+OPENAI_BASE_URL=https://api.moonshot.cn/v1
+LLM_API_KEY=your-kimi-key
+LLM_MODEL=kimi-k2-5-turbo
+```
+
+### Backward Compatibility
+
+Legacy `GEMINI_API_KEY` and `GEMINI_MODEL` environment variables are still supported and will be used if `LLM_*` variables are not set.
 
 ## Docker
 
