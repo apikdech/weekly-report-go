@@ -16,6 +16,7 @@ import (
 	"github.com/apikdech/gws-weekly-report/internal/sources/gchat"
 	gh "github.com/apikdech/gws-weekly-report/internal/sources/github"
 	"github.com/apikdech/gws-weekly-report/internal/sources/gmail"
+	"github.com/apikdech/gws-weekly-report/internal/sources/hackernews"
 	"github.com/apikdech/gws-weekly-report/internal/uploader/drive"
 )
 
@@ -54,6 +55,7 @@ func run() error {
 	githubSrc := gh.NewSource(cfg.GitHubToken, cfg.GitHubUsername)
 	calendarSrc := calendar.NewSource(executor)
 	gchatSrc := gchat.NewSource(executor, cfg.GWSChatSpacesID, cfg.GWSChatSenderName)
+	hnSrc := hackernews.NewSource(cfg.GeminiAPIKey, cfg.GeminiModel)
 
 	// 5. Run pipeline
 	reportData := &pipeline.ReportData{
@@ -62,7 +64,7 @@ func run() error {
 		PRsByRepo:   make(map[string]*pipeline.RepoPRs),
 		NextActions: cfg.NextActions,
 	}
-	runner := pipeline.NewRunner([]pipeline.DataSource{gmailSrc, githubSrc, calendarSrc, gchatSrc})
+	runner := pipeline.NewRunner([]pipeline.DataSource{gmailSrc, githubSrc, calendarSrc, gchatSrc, hnSrc})
 	if err := runner.Run(ctx, reportData); err != nil {
 		return fmt.Errorf("pipeline: %w", err)
 	}
