@@ -27,6 +27,8 @@ type Config struct {
 	LLMProvider string
 	// LLMAPIKey is the API key for the LLM provider.
 	LLMAPIKey string
+	// LLMModel is the model name for the LLM provider.
+	LLMModel string
 }
 
 // Load reads configuration from environment variables.
@@ -56,6 +58,7 @@ func Load() (*Config, error) {
 	cfg.GeminiModel = os.Getenv("GEMINI_MODEL")
 	cfg.LLMProvider = os.Getenv("LLM_PROVIDER")
 	cfg.LLMAPIKey = os.Getenv("LLM_API_KEY")
+	cfg.LLMModel = os.Getenv("LLM_MODEL")
 
 	type requiredVar struct {
 		name string
@@ -78,6 +81,17 @@ func Load() (*Config, error) {
 	}
 	if len(missing) > 0 {
 		return nil, fmt.Errorf("missing required environment variables: %s", strings.Join(missing, ", "))
+	}
+
+	// Apply backward compatibility: if LLM_* not set but GEMINI_* is, use GEMINI_*
+	if cfg.LLMProvider == "" && cfg.GeminiAPIKey != "" {
+		cfg.LLMProvider = "gemini"
+	}
+	if cfg.LLMAPIKey == "" && cfg.GeminiAPIKey != "" {
+		cfg.LLMAPIKey = cfg.GeminiAPIKey
+	}
+	if cfg.LLMModel == "" && cfg.GeminiModel != "" {
+		cfg.LLMModel = cfg.GeminiModel
 	}
 
 	return cfg, nil
