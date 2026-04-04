@@ -210,10 +210,6 @@ LLM_API_KEY=your-kimi-key
 LLM_MODEL=kimi-k2-5-turbo
 ```
 
-### Backward Compatibility
-
-Legacy `GEMINI_API_KEY` and `GEMINI_MODEL` environment variables are still supported and will be used if `LLM_*` variables are not set.
-
 ## Docker
 
 The image uses a 3-stage build:
