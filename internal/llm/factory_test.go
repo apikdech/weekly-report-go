@@ -83,6 +83,25 @@ func TestNewProvider_OpenAI_MissingKey(t *testing.T) {
 	}
 }
 
+func TestNewProvider_OpenAI_WithBaseURL(t *testing.T) {
+	cfg := &config.Config{
+		LLMProvider: "openai",
+		LLMAPIKey:   "test-key",
+		LLMModel:    "gpt-4",
+		LLMBaseURL:  "https://api.openrouter.ai/api/v1",
+	}
+
+	provider, err := NewProvider(cfg)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if provider == nil {
+		t.Error("Expected non-nil provider")
+	}
+	// Provider is created successfully with custom base URL
+}
+
 func TestNewProvider_Anthropic(t *testing.T) {
 	cfg := &config.Config{
 		LLMProvider: "anthropic",

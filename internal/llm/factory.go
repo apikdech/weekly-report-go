@@ -26,7 +26,11 @@ func NewProvider(cfg *config.Config) (anyllm.Provider, error) {
 		if cfg.LLMAPIKey == "" {
 			return nil, fmt.Errorf("LLM_API_KEY required for OpenAI provider")
 		}
-		return openai.New(anyllm.WithAPIKey(cfg.LLMAPIKey))
+		opts := []anyllm.Option{anyllm.WithAPIKey(cfg.LLMAPIKey)}
+		if cfg.LLMBaseURL != "" {
+			opts = append(opts, anyllm.WithBaseURL(cfg.LLMBaseURL))
+		}
+		return openai.New(opts...)
 
 	case "anthropic":
 		if cfg.LLMAPIKey == "" {
