@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
+	"github.com/apikdech/gws-weekly-report/internal/sources/hackernews"
 )
 
 //go:embed report.tmpl
@@ -25,13 +26,14 @@ func mustParseReportTemplate() *template.Template {
 }
 
 type templateData struct {
-	ReportName       string
-	Week             pipeline.WeekRange
-	SortedRepos      []*pipeline.RepoPRs
-	Events           []pipeline.CalendarEvent
-	OutOfOfficeBlock string
-	KeyMetrics       string
-	NextActionLines  []string // "1. ...", "2. ..."
+	ReportName           string
+	Week                 pipeline.WeekRange
+	SortedRepos          []*pipeline.RepoPRs
+	Events               []pipeline.CalendarEvent
+	OutOfOfficeBlock     string
+	KeyMetrics           string
+	NextActionLines      []string // "1. ...", "2. ..."
+	TechnologyHighlights []hackernews.TechHighlight
 }
 
 // Render produces the weekly report markdown string from ReportData.
@@ -60,13 +62,14 @@ func Render(data *pipeline.ReportData) (string, error) {
 	}
 
 	td := templateData{
-		ReportName:       data.ReportName,
-		Week:             data.Week,
-		SortedRepos:      repos,
-		Events:           data.Events,
-		OutOfOfficeBlock: oooBlock,
-		KeyMetrics:       formatKeyMetricsForMarkdown(data.KeyMetrics),
-		NextActionLines:  nextLines,
+		ReportName:           data.ReportName,
+		Week:                 data.Week,
+		SortedRepos:          repos,
+		Events:               data.Events,
+		OutOfOfficeBlock:     oooBlock,
+		KeyMetrics:           formatKeyMetricsForMarkdown(data.KeyMetrics),
+		NextActionLines:      nextLines,
+		TechnologyHighlights: data.TechnologyHighlights,
 	}
 
 	var buf bytes.Buffer
