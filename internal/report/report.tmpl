@@ -29,6 +29,14 @@
 {{- end }}
 
 ## **Technology, Business, Communication, Leadership, Management & Marketing**
+{{ if .TechnologyHighlights -}}
+### Technology Highlights (Top HN Articles)
+{{ range .TechnologyHighlights -}}
+1. [{{ .Title }}]({{ .URL }})
+{{ .Highlights }}
+
+{{ end }}
+{{ end -}}
 
 ## **Out of Office**
 {{- if .OutOfOfficeBlock }}
