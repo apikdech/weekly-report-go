@@ -51,3 +51,17 @@ func TestExtractDocID_NoURL(t *testing.T) {
 		t.Fatal("expected error when no doc URL found, got nil")
 	}
 }
+
+func TestExtractDocID_QuotedPrintableSoftBreaks(t *testing.T) {
+	// Raw MIME often uses QP: "=" + newline continues the line; "=3D" is "=".
+	body := `<https://docs.google.com/document/d/1baBuDfSTAsIEJdyRac4RXXoCRkHOxYa1c6yEau=
+uHeC0/edit?usp=3Ddrivesdk>`
+	want := "1baBuDfSTAsIEJdyRac4RXXoCRkHOxYa1c6yEauuHeC0"
+	docID, err := gmail.ExtractDocID([]byte(body))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if docID != want {
+		t.Errorf("got %q, want %q", docID, want)
+	}
+}
