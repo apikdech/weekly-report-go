@@ -90,9 +90,9 @@ func run() error {
 	log.Printf("Uploaded report to Google Doc: https://docs.google.com/document/d/%s/edit", reportData.DocID)
 
 	// 9. Cleanup
-	if err := os.Remove(reportPath); err != nil {
-		log.Printf("WARN: failed to remove %s: %v", reportPath, err)
-	}
+	// if err := os.Remove(reportPath); err != nil {
+	// 	log.Printf("WARN: failed to remove %s: %v", reportPath, err)
+	// }
 	log.Printf("Done.")
 	return nil
 }
