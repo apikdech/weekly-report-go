@@ -127,6 +127,7 @@ func (s *Source) analyzeWithLLM(ctx context.Context, articles []HNArticle) ([]pi
 	// Prepare prompt
 	fullPrompt := llm.PromptTemplate + "\n\nArticles JSON:\n" + string(inputJSON)
 
+	log.Printf("[hackernews] Sending request to LLM provider %s with model %s", s.provider.Name(), s.model)
 	// Use any-llm-go for completion
 	response, err := s.provider.Completion(ctx, anyllm.CompletionParams{
 		Model: s.model,

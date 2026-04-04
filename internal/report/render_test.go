@@ -166,11 +166,11 @@ func TestRender_TechnologyHighlightsMarkdownStructure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	want1 := "1. [First article](https://example.com/a) <br/>\n   Summary line one.\n   - Bullet A\n   - Bullet B"
+	want1 := "1. [First article](https://example.com/a)  \n   Summary line one.\n   - Bullet A\n   - Bullet B"
 	if !strings.Contains(out, want1) {
 		t.Errorf("expected first highlight block\ngot:\n%s", out)
 	}
-	if !strings.Contains(out, "1. [Second article](https://example.com/b) <br/>\n   Only summary, no bullets.") {
+	if !strings.Contains(out, "1. [Second article](https://example.com/b)  \n   Only summary, no bullets.") {
 		t.Errorf("expected second highlight with correct indent\ngot:\n%s", out)
 	}
 	if strings.Count(out, "1. [First article]") != 1 || strings.Count(out, "1. [Second article]") != 1 {
