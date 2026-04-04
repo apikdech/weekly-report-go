@@ -10,6 +10,7 @@ import (
 
 	"github.com/apikdech/gws-weekly-report/internal/config"
 	"github.com/apikdech/gws-weekly-report/internal/gws"
+	"github.com/apikdech/gws-weekly-report/internal/llm"
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
 	"github.com/apikdech/gws-weekly-report/internal/report"
 	"github.com/apikdech/gws-weekly-report/internal/sources/calendar"
@@ -18,6 +19,7 @@ import (
 	"github.com/apikdech/gws-weekly-report/internal/sources/gmail"
 	"github.com/apikdech/gws-weekly-report/internal/sources/hackernews"
 	"github.com/apikdech/gws-weekly-report/internal/uploader/drive"
+	anyllm "github.com/mozilla-ai/any-llm-go"
 )
 
 func main() {
@@ -55,7 +57,19 @@ func run() error {
 	githubSrc := gh.NewSource(cfg.GitHubToken, cfg.GitHubUsername)
 	calendarSrc := calendar.NewSource(executor)
 	gchatSrc := gchat.NewSource(executor, cfg.GWSChatSpacesID, cfg.GWSChatSenderName)
-	hnSrc := hackernews.NewSource(cfg.GeminiAPIKey, cfg.GeminiModel)
+
+	// Create LLM provider if configured
+	var llmProvider anyllm.Provider
+	if cfg.LLMAPIKey != "" {
+		var err error
+		llmProvider, err = llm.NewProvider(cfg)
+		if err != nil {
+			log.Printf("[main] WARNING: Failed to create LLM provider: %v", err)
+			// Continue without LLM provider - section will be skipped
+		}
+	}
+
+	hnSrc := hackernews.NewSource(llmProvider, cfg.LLMModel)
 
 	// 5. Run pipeline
 	reportData := &pipeline.ReportData{
