@@ -114,7 +114,7 @@ func TestParseEvents_SkipsSelfDeclined(t *testing.T) {
 	        },
 	        {
 	          "comment": "Declined because I am out of office",
-	          "email": "ricky.setiawan@gdplabs.id",
+	          "email": "test@gmail.com",
 	          "responseStatus": "declined",
 	          "self": true
 	        }

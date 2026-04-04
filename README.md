@@ -83,7 +83,7 @@ Edit `.env` with your values:
 # Required
 GITHUB_TOKEN=ghp_your_token_here
 GITHUB_USERNAME=your-github-username
-GWS_EMAIL_SENDER=agent@gdplabs.id       # who sends the "fill weekly report" email
+GWS_EMAIL_SENDER=sender@example.com       # who sends the "fill weekly report" email
 REPORT_NAME=Your Full Name              # must match the name in the email subject
 GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE=/run/secrets/gws-credentials
 

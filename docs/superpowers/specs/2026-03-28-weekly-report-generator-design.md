@@ -60,7 +60,7 @@ All config from environment variables. Fails fast at startup if required vars ar
 |---|---|
 | `GITHUB_TOKEN` | GitHub personal access token |
 | `GITHUB_USERNAME` | GitHub username (e.g. `ricky-setiawan`) |
-| `GWS_EMAIL_SENDER` | Email sender filter (e.g. `agent@gdplabs.id`) |
+| `GWS_EMAIL_SENDER` | Email sender filter (e.g. `sender@example.com`) |
 | `REPORT_NAME` | Full name for report header and email search (e.g. `Ricky Setiawan`) |
 | `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE` | Path to exported gws credentials JSON |
 
@@ -118,7 +118,7 @@ Execute via `gws` CLI:
 ```
 gws gmail users messages list --params '{
   "userId": "me",
-  "q": "from:(agent@gdplabs.id) [Fill Weekly Report: Ricky Setiawan] 22 March 2026"
+  "q": "from:(sender@example.com) [Fill Weekly Report: Ricky Setiawan] 22 March 2026"
 }'
 ```
 Parse the first message ID from the JSON response. Then read the email body:
@@ -243,7 +243,7 @@ services:
 ```
 GITHUB_TOKEN=ghp_...
 GITHUB_USERNAME=ricky-setiawan
-GWS_EMAIL_SENDER=agent@gdplabs.id
+GWS_EMAIL_SENDER=sender@example.com
 REPORT_NAME=Ricky Setiawan
 GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE=/run/secrets/gws-credentials
 REPORT_TIMEZONE=Asia/Jakarta

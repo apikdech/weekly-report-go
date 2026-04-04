@@ -79,7 +79,7 @@ Create `/.env.example`:
 # Required
 GITHUB_TOKEN=ghp_your_token_here
 GITHUB_USERNAME=your-github-username
-GWS_EMAIL_SENDER=agent@gdplabs.id
+GWS_EMAIL_SENDER=sender@example.com
 REPORT_NAME=Your Full Name
 GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE=/run/secrets/gws-credentials
 
@@ -1948,7 +1948,7 @@ SSH into VPS and create `/opt/gws-weekly-report/.env`:
 ```
 GITHUB_TOKEN=ghp_your_real_token
 GITHUB_USERNAME=ricky-setiawan
-GWS_EMAIL_SENDER=agent@gdplabs.id
+GWS_EMAIL_SENDER=sender@example.com
 REPORT_NAME=Ricky Setiawan
 GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE=/run/secrets/gws-credentials
 REPORT_TIMEZONE=Asia/Jakarta
