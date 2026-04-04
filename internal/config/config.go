@@ -19,6 +19,10 @@ type Config struct {
 	TempDir            string
 	// NextActions are weekly "next action" bullets, from REPORT_NEXT_ACTIONS (comma-separated).
 	NextActions []string
+	// GeminiAPIKey is optional. If not set, technology section will be skipped.
+	GeminiAPIKey string
+	// GeminiModel is the Gemini model to use. Defaults to "gemini-3-flash".
+	GeminiModel string
 }
 
 // Load reads configuration from environment variables.
@@ -43,6 +47,9 @@ func Load() (*Config, error) {
 		cfg.TempDir = "/tmp"
 	}
 	cfg.NextActions = parseCommaSeparated(os.Getenv("REPORT_NEXT_ACTIONS"))
+
+	cfg.GeminiAPIKey = os.Getenv("GEMINI_API_KEY")
+	cfg.GeminiModel = os.Getenv("GEMINI_MODEL")
 
 	type requiredVar struct {
 		name string
