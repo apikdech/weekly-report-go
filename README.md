@@ -130,6 +130,16 @@ Add this to the VPS crontab (`crontab -e`) to run every Monday at 09:00:
 | `TEMP_DIR` | No | `/tmp` | Directory for the temporary `report.md` file |
 | `GWS_BIN_PATH` | No | `gws` | Path to the gws binary (resolved from `PATH` by default) |
 
+### Optional Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GEMINI_API_KEY` | Google Gemini API key for technology section analysis | (empty - section skipped) |
+| `GEMINI_MODEL` | Gemini model to use for article analysis | `gemini-3-flash` |
+| `REPORT_TIMEZONE` | Timezone for report date calculations | `UTC` |
+| `TEMP_DIR` | Directory for temporary report files | `/tmp` |
+| `REPORT_NEXT_ACTIONS` | Comma-separated list of next actions | (empty) |
+
 ## Docker
 
 The image uses a 3-stage build:
