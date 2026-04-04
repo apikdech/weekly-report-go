@@ -34,14 +34,22 @@ func (w WeekRange) HeaderLabel() string {
 
 // ReportData holds all collected data used to render the weekly report.
 type ReportData struct {
-	ReportName       string
-	Week             WeekRange
-	DocID            string
-	PRsByRepo        map[string]*RepoPRs // keyed by repo NameWithOwner
-	Events           []CalendarEvent
-	OutOfOfficeDates []string // sorted unique, formatted as "2 January 2006"
-	KeyMetrics       string   // raw text from Google Chat spaces bot message
-	NextActions      []string // from REPORT_NEXT_ACTIONS (comma-separated), rendered as numbered list
+	ReportName           string
+	Week                 WeekRange
+	DocID                string
+	PRsByRepo            map[string]*RepoPRs // keyed by repo NameWithOwner
+	Events               []CalendarEvent
+	OutOfOfficeDates     []string // sorted unique, formatted as "2 January 2006"
+	KeyMetrics           string   // raw text from Google Chat spaces bot message
+	NextActions          []string // from REPORT_NEXT_ACTIONS (comma-separated), rendered as numbered list
+	TechnologyHighlights []TechHighlight
+}
+
+// TechHighlight represents a single analyzed technical article.
+type TechHighlight struct {
+	Title      string
+	URL        string
+	Highlights string
 }
 
 // RepoPRs holds authored and reviewed PRs for a single repository.

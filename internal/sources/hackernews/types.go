@@ -1,5 +1,7 @@
 package hackernews
 
+import "github.com/apikdech/gws-weekly-report/internal/pipeline"
+
 // HNArticle represents a single Hacker News story from the Algolia API
 type HNArticle struct {
 	Title  string `json:"title"`
@@ -8,11 +10,7 @@ type HNArticle struct {
 }
 
 // TechHighlight represents a single analyzed technical article
-type TechHighlight struct {
-	Title      string
-	URL        string
-	Highlights string
-}
+type TechHighlight = pipeline.TechHighlight
 
 // hnAPIResponse represents the Algolia API response structure
 type hnAPIResponse struct {
