@@ -2,6 +2,7 @@ package report
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"sort"
 	"strings"
@@ -10,43 +11,18 @@ import (
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
 )
 
-const reportTemplate = `# [Weekly Report: {{ .ReportName }}] {{ .Week.HeaderLabel }}
+//go:embed report.tmpl
+var reportTemplateFS embed.FS
 
-## **Issues**
+var reportTmpl = mustParseReportTemplate()
 
-## **Accomplishment**
-{{ range .SortedRepos -}}
-### {{ .RepoName }}
-#### Implemented PR
-{{ range .Implemented -}}
-1. [{{ .Title }}]({{ .URL }})
-{{ end }}
-#### Reviewed PR
-{{ range .Reviewed -}}
-1. [{{ .Title }}]({{ .URL }})
-{{ end }}
-{{ end }}
-## **Meetings/Events/Training/Conferences**
-{{ range .Events -}}
-- {{ .Title }} ({{ .Date }})
-{{ end }}
-## **Key Metrics / OMTM**
-{{- if .KeyMetrics }}
-
-{{ .KeyMetrics }}
-{{ end }}
-## **Next Actions**
-{{- range .NextActionLines }}
-{{ . }}
-{{- end }}
-
-## **Technology, Business, Communication, Leadership, Management & Marketing**
-
-## **Out of Office**
-{{- if .OutOfOfficeBlock }}
-
-{{ .OutOfOfficeBlock -}}
-{{- end }}`
+func mustParseReportTemplate() *template.Template {
+	t, err := template.ParseFS(reportTemplateFS, "report.tmpl")
+	if err != nil {
+		panic("report: parse embedded report.tmpl: " + err.Error())
+	}
+	return t
+}
 
 type templateData struct {
 	ReportName       string
@@ -60,11 +36,6 @@ type templateData struct {
 
 // Render produces the weekly report markdown string from ReportData.
 func Render(data *pipeline.ReportData) (string, error) {
-	tmpl, err := template.New("report").Parse(reportTemplate)
-	if err != nil {
-		return "", fmt.Errorf("parse template: %w", err)
-	}
-
 	// Sort repos alphabetically for deterministic output.
 	repos := make([]*pipeline.RepoPRs, 0, len(data.PRsByRepo))
 	for _, r := range data.PRsByRepo {
@@ -99,7 +70,7 @@ func Render(data *pipeline.ReportData) (string, error) {
 	}
 
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, td); err != nil {
+	if err := reportTmpl.Execute(&buf, td); err != nil {
 		return "", fmt.Errorf("execute template: %w", err)
 	}
 	return buf.String(), nil

@@ -1,0 +1,37 @@
+# [Weekly Report: {{ .ReportName }}] {{ .Week.HeaderLabel }}
+
+## **Issues**
+
+## **Accomplishment**
+{{ range .SortedRepos -}}
+### {{ .RepoName }}
+#### Implemented PR
+{{ range .Implemented -}}
+1. [{{ .Title }}]({{ .URL }})
+{{ end }}
+#### Reviewed PR
+{{ range .Reviewed -}}
+1. [{{ .Title }}]({{ .URL }})
+{{ end }}
+{{ end }}
+## **Meetings/Events/Training/Conferences**
+{{ range .Events -}}
+- {{ .Title }} ({{ .Date }})
+{{ end }}
+## **Key Metrics / OMTM**
+{{- if .KeyMetrics }}
+
+{{ .KeyMetrics }}
+{{ end }}
+## **Next Actions**
+{{- range .NextActionLines }}
+{{ . }}
+{{- end }}
+
+## **Technology, Business, Communication, Leadership, Management & Marketing**
+
+## **Out of Office**
+{{- if .OutOfOfficeBlock }}
+
+{{ .OutOfOfficeBlock -}}
+{{- end }}
