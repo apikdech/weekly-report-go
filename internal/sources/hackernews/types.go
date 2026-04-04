@@ -22,30 +22,6 @@ type hnAPIResponse struct {
 	} `json:"hits"`
 }
 
-// geminiRequest represents the request body for Gemini API
-type geminiRequest struct {
-	Contents []geminiContent `json:"contents"`
-}
-
-type geminiContent struct {
-	Parts []geminiPart `json:"parts"`
-}
-
-type geminiPart struct {
-	Text string `json:"text"`
-}
-
-// geminiResponse represents the response from Gemini API
-type geminiResponse struct {
-	Candidates []struct {
-		Content struct {
-			Parts []struct {
-				Text string `json:"text"`
-			} `json:"parts"`
-		} `json:"content"`
-	} `json:"candidates"`
-}
-
 // articleResult represents the expected JSON structure from LLM responses
 type articleResult struct {
 	Articles []struct {
