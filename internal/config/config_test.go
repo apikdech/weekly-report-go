@@ -145,6 +145,7 @@ func TestLoad_LLMConfiguration(t *testing.T) {
 		"GWS_CHAT_SPACES_ID":                    os.Getenv("GWS_CHAT_SPACES_ID"),
 		"GWS_CHAT_SENDER_NAME":                  os.Getenv("GWS_CHAT_SENDER_NAME"),
 		"LLM_PROVIDER":                          os.Getenv("LLM_PROVIDER"),
+		"LLM_BASE_URL":                          os.Getenv("LLM_BASE_URL"),
 		"LLM_API_KEY":                           os.Getenv("LLM_API_KEY"),
 		"LLM_MODEL":                             os.Getenv("LLM_MODEL"),
 	}
@@ -165,6 +166,7 @@ func TestLoad_LLMConfiguration(t *testing.T) {
 
 	// Set LLM configuration
 	os.Setenv("LLM_PROVIDER", "openai")
+	os.Setenv("LLM_BASE_URL", "https://api.openai.com/v1")
 	os.Setenv("LLM_API_KEY", "test-llm-key")
 	os.Setenv("LLM_MODEL", "gpt-4")
 
@@ -175,6 +177,9 @@ func TestLoad_LLMConfiguration(t *testing.T) {
 
 	if cfg.LLMProvider != "openai" {
 		t.Errorf("LLMProvider = %v, want openai", cfg.LLMProvider)
+	}
+	if cfg.LLMBaseURL != "https://api.openai.com/v1" {
+		t.Errorf("LLMBaseURL = %v, want https://api.openai.com/v1", cfg.LLMBaseURL)
 	}
 	if cfg.LLMAPIKey != "test-llm-key" {
 		t.Errorf("LLMAPIKey = %v, want test-llm-key", cfg.LLMAPIKey)

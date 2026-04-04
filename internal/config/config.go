@@ -19,12 +19,10 @@ type Config struct {
 	TempDir            string
 	// NextActions are weekly "next action" bullets, from REPORT_NEXT_ACTIONS (comma-separated).
 	NextActions []string
-	// GeminiAPIKey is optional. If not set, technology section will be skipped.
-	GeminiAPIKey string
-	// GeminiModel is the Gemini model to use. Defaults to "gemini-3-flash".
-	GeminiModel string
 	// LLMProvider is the LLM provider to use (gemini, openai, anthropic). Defaults to "gemini".
 	LLMProvider string
+	// LLMBaseURL is the base URL for OpenAI-compatible providers (optional).
+	LLMBaseURL string
 	// LLMAPIKey is the API key for the LLM provider.
 	LLMAPIKey string
 	// LLMModel is the model name for the LLM provider.
@@ -54,9 +52,8 @@ func Load() (*Config, error) {
 	}
 	cfg.NextActions = parseCommaSeparated(os.Getenv("REPORT_NEXT_ACTIONS"))
 
-	cfg.GeminiAPIKey = os.Getenv("GEMINI_API_KEY")
-	cfg.GeminiModel = os.Getenv("GEMINI_MODEL")
 	cfg.LLMProvider = os.Getenv("LLM_PROVIDER")
+	cfg.LLMBaseURL = os.Getenv("LLM_BASE_URL")
 	cfg.LLMAPIKey = os.Getenv("LLM_API_KEY")
 	cfg.LLMModel = os.Getenv("LLM_MODEL")
 
@@ -81,17 +78,6 @@ func Load() (*Config, error) {
 	}
 	if len(missing) > 0 {
 		return nil, fmt.Errorf("missing required environment variables: %s", strings.Join(missing, ", "))
-	}
-
-	// Apply backward compatibility: if LLM_* not set but GEMINI_* is, use GEMINI_*
-	if cfg.LLMProvider == "" && cfg.GeminiAPIKey != "" {
-		cfg.LLMProvider = "gemini"
-	}
-	if cfg.LLMAPIKey == "" && cfg.GeminiAPIKey != "" {
-		cfg.LLMAPIKey = cfg.GeminiAPIKey
-	}
-	if cfg.LLMModel == "" && cfg.GeminiModel != "" {
-		cfg.LLMModel = cfg.GeminiModel
 	}
 
 	return cfg, nil
