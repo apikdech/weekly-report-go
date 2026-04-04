@@ -129,6 +129,7 @@ Add this to the VPS crontab (`crontab -e`) to run every Monday at 09:00:
 | `LLM_PROVIDER` | No | `gemini` | LLM provider for Technology Highlights: `gemini`, `openai`, `anthropic` |
 | `LLM_API_KEY` | No | — | API key for the selected LLM provider |
 | `LLM_MODEL` | No | `gemini-3-flash` | Model name (provider-specific, see LLM Configuration section) |
+| `LLM_BASE_URL` | No | — | Base URL for OpenAI-compatible providers (optional, see LLM Configuration) |
 | `REPORT_TIMEZONE` | No | `UTC` | Timezone for week range calculation (e.g. `Asia/Jakarta`) |
 | `TEMP_DIR` | No | `/tmp` | Directory for the temporary `report.md` file |
 | `GWS_BIN_PATH` | No | `gws` | Path to the gws binary (resolved from `PATH` by default) |
@@ -151,6 +152,15 @@ LLM_API_KEY=your-api-key-here
 # OpenAI: gpt-4, gpt-3.5-turbo, gpt-4o, etc.
 # Anthropic: claude-3-5-sonnet-20241022, claude-3-opus, etc.
 LLM_MODEL=gemini-3-flash
+
+# Base URL for OpenAI-compatible providers (optional)
+# Only used with LLM_PROVIDER=openai
+# Examples:
+# - OpenAI default: https://api.openai.com/v1
+# - OpenRouter: https://openrouter.ai/api/v1
+# - Fireworks: https://api.fireworks.ai/inference/v1
+# - Kimi: https://api.moonshot.cn/v1
+LLM_BASE_URL=https://api.openai.com/v1
 ```
 
 ### Provider Examples
@@ -179,7 +189,7 @@ LLM_MODEL=claude-3-5-sonnet-20241022
 **OpenRouter (Claude, Llama, etc.):**
 ```bash
 LLM_PROVIDER=openai
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
+LLM_BASE_URL=https://openrouter.ai/api/v1
 LLM_API_KEY=your-openrouter-key
 LLM_MODEL=anthropic/claude-3.5-sonnet
 ```
@@ -187,7 +197,7 @@ LLM_MODEL=anthropic/claude-3.5-sonnet
 **Fireworks.ai:**
 ```bash
 LLM_PROVIDER=openai
-OPENAI_BASE_URL=https://api.fireworks.ai/inference/v1
+LLM_BASE_URL=https://api.fireworks.ai/inference/v1
 LLM_API_KEY=your-fireworks-key
 LLM_MODEL=accounts/fireworks/models/llama-v3p1-70b-instruct
 ```
@@ -195,7 +205,7 @@ LLM_MODEL=accounts/fireworks/models/llama-v3p1-70b-instruct
 **Kimi:**
 ```bash
 LLM_PROVIDER=openai
-OPENAI_BASE_URL=https://api.moonshot.cn/v1
+LLM_BASE_URL=https://api.moonshot.cn/v1
 LLM_API_KEY=your-kimi-key
 LLM_MODEL=kimi-k2-5-turbo
 ```
