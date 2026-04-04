@@ -23,6 +23,10 @@ type Config struct {
 	GeminiAPIKey string
 	// GeminiModel is the Gemini model to use. Defaults to "gemini-3-flash".
 	GeminiModel string
+	// LLMProvider is the LLM provider to use (gemini, openai, anthropic). Defaults to "gemini".
+	LLMProvider string
+	// LLMAPIKey is the API key for the LLM provider.
+	LLMAPIKey string
 }
 
 // Load reads configuration from environment variables.
@@ -50,6 +54,8 @@ func Load() (*Config, error) {
 
 	cfg.GeminiAPIKey = os.Getenv("GEMINI_API_KEY")
 	cfg.GeminiModel = os.Getenv("GEMINI_MODEL")
+	cfg.LLMProvider = os.Getenv("LLM_PROVIDER")
+	cfg.LLMAPIKey = os.Getenv("LLM_API_KEY")
 
 	type requiredVar struct {
 		name string
