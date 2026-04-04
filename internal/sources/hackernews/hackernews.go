@@ -3,37 +3,38 @@ package hackernews
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/apikdech/gws-weekly-report/internal/llm"
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
+	anyllm "github.com/mozilla-ai/any-llm-go"
 )
 
 // Source fetches top technical articles from Hacker News for the week.
 type Source struct {
-	apiKey     string
+	provider   anyllm.Provider
 	model      string
 	highlights []pipeline.TechHighlight
 }
 
-// NewSource creates a HackerNewsSource. apiKey can be empty (section will be skipped).
-func NewSource(apiKey, model string) *Source {
-	if model == "" {
-		model = "gemini-3-flash"
-	}
-	return &Source{apiKey: apiKey, model: model}
+// NewSource creates a HackerNewsSource.
+// provider can be nil (section will be skipped).
+func NewSource(provider anyllm.Provider, model string) *Source {
+	return &Source{provider: provider, model: model}
 }
 
 // Name implements DataSource.
 func (s *Source) Name() string { return "hackernews" }
 
-// Fetch retrieves top 15 HN articles and analyzes them with Gemini.
+// Fetch retrieves top 15 HN articles and analyzes them with LLM.
 func (s *Source) Fetch(ctx context.Context, week pipeline.WeekRange) error {
-	if s.apiKey == "" {
-		log.Printf("[hackernews] GEMINI_API_KEY not set, skipping technology section")
+	if s.provider == nil {
+		log.Printf("[hackernews] LLM provider not configured, skipping technology section")
 		return nil
 	}
 
@@ -49,10 +50,17 @@ func (s *Source) Fetch(ctx context.Context, week pipeline.WeekRange) error {
 		return nil
 	}
 
-	// Analyze with Gemini to get top 3 technical articles
-	highlights, err := s.analyzeWithGemini(ctx, articles)
+	// Analyze with LLM to get technical articles
+	highlights, err := s.analyzeWithLLM(ctx, articles)
 	if err != nil {
-		log.Printf("[hackernews] WARNING: Failed to analyze with Gemini: %v", err)
+		// Check for specific error types from any-llm-go
+		if errors.Is(err, anyllm.ErrRateLimit) {
+			log.Printf("[hackernews] WARNING: Rate limited by LLM provider: %v", err)
+		} else if errors.Is(err, anyllm.ErrAuthentication) {
+			log.Printf("[hackernews] WARNING: LLM authentication failed: %v", err)
+		} else {
+			log.Printf("[hackernews] WARNING: Failed to analyze with LLM: %v", err)
+		}
 		return nil // Don't fail the whole report
 	}
 
@@ -107,6 +115,57 @@ func (s *Source) fetchHNArticles(ctx context.Context, week pipeline.WeekRange) (
 	}
 
 	return articles, nil
+}
+
+func (s *Source) analyzeWithLLM(ctx context.Context, articles []HNArticle) ([]pipeline.TechHighlight, error) {
+	// Build JSON input
+	inputJSON, err := json.Marshal(articles)
+	if err != nil {
+		return nil, fmt.Errorf("marshal articles: %w", err)
+	}
+
+	// Prepare prompt
+	fullPrompt := llm.PromptTemplate + "\n\nArticles JSON:\n" + string(inputJSON)
+
+	// Use any-llm-go for completion
+	response, err := s.provider.Completion(ctx, anyllm.CompletionParams{
+		Model: s.model,
+		Messages: []anyllm.Message{
+			{Role: anyllm.RoleUser, Content: fullPrompt},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response.Choices) == 0 {
+		return nil, fmt.Errorf("empty response from LLM")
+	}
+
+	// Extract JSON from response text
+	responseText, ok := response.Choices[0].Message.Content.(string)
+	if !ok {
+		return nil, fmt.Errorf("unexpected response content type")
+	}
+	jsonStr := llm.ExtractJSONFromMarkdown(responseText)
+
+	// Parse the result
+	var result articleResult
+	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
+		return nil, fmt.Errorf("parse LLM result: %w", err)
+	}
+
+	// Convert to TechHighlight slice
+	highlights := make([]pipeline.TechHighlight, 0, len(result.Articles))
+	for _, article := range result.Articles {
+		highlights = append(highlights, pipeline.TechHighlight{
+			Title:      article.Title,
+			URL:        article.URL,
+			Highlights: article.Highlights,
+		})
+	}
+
+	return highlights, nil
 }
 
 // Contribute sets TechnologyHighlights on the report.

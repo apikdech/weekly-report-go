@@ -46,8 +46,8 @@ type geminiResponse struct {
 	} `json:"candidates"`
 }
 
-// geminiArticleResult represents the expected JSON structure from Gemini
-type geminiArticleResult struct {
+// articleResult represents the expected JSON structure from LLM responses
+type articleResult struct {
 	Articles []struct {
 		Title      string `json:"title"`
 		URL        string `json:"url"`

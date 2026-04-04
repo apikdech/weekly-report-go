@@ -1,9 +1,9 @@
 package hackernews
 
-// Placeholder imports to preserve any-llm-go dependency
-// These will be properly integrated in Task 2
+// Preserve any-llm-go dependency for all providers
 import (
 	_ "github.com/mozilla-ai/any-llm-go"
 	_ "github.com/mozilla-ai/any-llm-go/providers/anthropic"
+	_ "github.com/mozilla-ai/any-llm-go/providers/gemini"
 	_ "github.com/mozilla-ai/any-llm-go/providers/openai"
 )
