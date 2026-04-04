@@ -3,21 +3,24 @@ FROM golang:1.26.1 AS go-builder
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
+
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/reporter ./cmd/reporter
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -buildvcs=false -o /app/reporter ./cmd/reporter
 
 # Stage 2: Download gws pre-built binary (Rust native, musl static build)
-FROM alpine:3.21 AS gws-downloader
+FROM alpine:3.21 AS downloader
 ARG GWS_VERSION=0.22.3
-RUN apk add --no-cache wget ca-certificates \
-  && wget -O /tmp/gws.tar.gz \
-     "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-x86_64-unknown-linux-musl.tar.gz" \
-  && tar -xzf /tmp/gws.tar.gz -C /tmp \
-  && mv /tmp/google-workspace-cli-x86_64-unknown-linux-musl/gws /usr/local/bin/gws \
-  && chmod +x /usr/local/bin/gws
+RUN apk add --no-cache curl tar
+RUN curl -L "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-x86_64-unknown-linux-musl.tar.gz" \
+    | tar -xz -C /tmp \
+    && mv /tmp/google-workspace-cli-*/gws /gws
 
-# Stage 3: Distroless runtime (no shell, no package manager)
-FROM gcr.io/distroless/base-debian12@sha256:937c7eaaf6f3f2d38a1f8c4aeff326f0c56e4593ea152e9e8f74d976dde52f56
+# Stage 3: Distroless static runtime (CA certs only; smaller than base — no glibc for fully static binaries)
+FROM gcr.io/distroless/static-debian12@sha256:20bc6c0bc4d625a22a8fde3e55f6515709b32055ef8fb9cfbddaa06d1760f838
 COPY --from=go-builder /app/reporter /app/reporter
-COPY --from=gws-downloader /usr/local/bin/gws /usr/local/bin/gws
+COPY --from=downloader /gws /usr/local/bin/gws
+
+# Optional: Run as non-root for security
+USER 65532:65532
+
 ENTRYPOINT ["/app/reporter"]
