@@ -136,15 +136,18 @@ func TestNewProvider_CaseInsensitive(t *testing.T) {
 	}
 }
 
-func TestNewProvider_Unknown(t *testing.T) {
+func TestNewProvider_UnknownDefaultsToGemini(t *testing.T) {
 	cfg := &config.Config{
 		LLMProvider: "unknown-provider",
 		LLMAPIKey:   "test-key",
 		LLMModel:    "model",
 	}
 
-	_, err := NewProvider(cfg)
-	if err == nil {
-		t.Error("Expected error for unknown provider")
+	provider, err := NewProvider(cfg)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if provider == nil {
+		t.Error("expected non-nil provider when LLM_PROVIDER is unrecognized (defaults to Gemini)")
 	}
 }
