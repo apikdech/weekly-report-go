@@ -142,6 +142,48 @@ The image uses a 3-stage build:
 
 The distroless runtime has no shell or package manager, reducing the attack surface.
 
+### Compose-only: `DEPLOY_IMAGE`
+
+`docker-compose.yml` uses `image: ${DEPLOY_IMAGE:-gws-weekly-report:local}`. For local development you can omit it and run `docker compose build`. On a VPS that runs **pre-built images from GitHub Container Registry**, set `DEPLOY_IMAGE` in `.env` to the same image reference you pull (for example `ghcr.io/your-user/gws-weekly-report:main`, all lowercase). **Crontab runs a new shell without the variables from CI**, so this line must live in `.env` on the server; otherwise Compose falls back to `gws-weekly-report:local` and will not use the registry image.
+
+## CI/CD (GitHub Actions)
+
+Pushing to `main` runs [`.github/workflows/docker-build-deploy.yml`](.github/workflows/docker-build-deploy.yml): the image is built and pushed to **GHCR** (`ghcr.io/<owner>/<repo>`, tags `main` and a per-commit SHA), then the workflow connects to your VPS over **SSH**, runs `docker compose pull` for the `reporter` service, and `docker image prune -f` to remove dangling untagged layers. It does **not** run `docker compose up`; your existing crontab keeps scheduling runs.
+
+### Repository secrets
+
+| Secret | Description |
+|--------|-------------|
+| `VPS_HOST` | VPS hostname or IP address. |
+| `VPS_USER` | SSH login user (must be able to run `docker` and `docker compose` in the app directory). |
+| `VPS_SSH_KEY` | **Private** half of an SSH key pair used only for this deploy (see below). |
+| `GHCR_PULL_TOKEN` | Optional. GitHub PAT with `read:packages`, if the container package is **private**. Omit for public packages. |
+
+### Repository variables
+
+| Variable | Description |
+|----------|-------------|
+| `VPS_APP_DIR` | Optional. Absolute path on the VPS where `docker-compose.yml` and `.env` live. Default when unset: `$HOME/gws-weekly-report` for the SSH user. |
+
+### What to put in `VPS_SSH_KEY`
+
+`VPS_SSH_KEY` is the **private** key whose matching **public** key is authorized on the VPS (usually listed in `~/.ssh/authorized_keys` for `VPS_USER`). It is often the same *kind* of key you use from your laptop (for example `~/.ssh/id_ed25519` or `~/.ssh/id_rsa`), but for automation it is safer to create a **dedicated deploy key** and only add its public part to the server:
+
+```bash
+ssh-keygen -t ed25519 -f ./gws-deploy -N ""
+# Put gws-deploy.pub in ~/.ssh/authorized_keys on the VPS
+# Put the entire contents of gws-deploy (including BEGIN/END lines) into the VPS_SSH_KEY secret
+```
+
+Paste the **whole private key file** into the GitHub secret (multi-line PEM). Do not commit it.
+
+### One-time VPS checklist for CI
+
+1. App directory on the server contains `docker-compose.yml`, `.env`, and `credentials.json`.
+2. `.env` includes `DEPLOY_IMAGE=ghcr.io/<owner>/<repo>:main` (owner/repo **lowercase**, same as the workflow pushes).
+3. The SSH user can run Docker (for example membership in the `docker` group).
+4. For private GHCR images, either set `GHCR_PULL_TOKEN` or run `docker login ghcr.io` once on the VPS.
+
 ## Development
 
 ```bash

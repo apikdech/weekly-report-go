@@ -1,5 +1,6 @@
 services:
   reporter:
+    image: ${DEPLOY_IMAGE:-gws-weekly-report:local}
     build: .
     env_file: .env
     volumes:

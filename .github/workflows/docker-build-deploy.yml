@@ -1,0 +1,74 @@
+name: Docker build, push, and deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: "${{ steps.image.outputs.lowercase }}:main"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lowercase image name (Docker requirement)
+        id: image
+        run: echo "lowercase=${REGISTRY}/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.image.outputs.lowercase }}
+          tags: |
+            type=raw,value=main,enable={{is_default_branch}}
+            type=sha
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DEPLOY_IMAGE: ${{ needs.build-and-push.outputs.image }}
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+          VPS_APP_DIR: ${{ vars.VPS_APP_DIR }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          envs: DEPLOY_IMAGE,GHCR_PULL_TOKEN,VPS_APP_DIR
+          script: |
+            set -euo pipefail
+            APP_DIR="${VPS_APP_DIR:-$HOME/gws-weekly-report}"
+            cd "$APP_DIR"
+            if [ -n "${GHCR_PULL_TOKEN:-}" ]; then
+              echo "$GHCR_PULL_TOKEN" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+            fi
+            export DEPLOY_IMAGE
+            docker compose pull reporter
+            docker image prune -f
