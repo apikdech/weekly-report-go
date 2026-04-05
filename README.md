@@ -45,8 +45,6 @@ Each run executes a pipeline:
 ## Out of Office
 ```
 
-Sections that require manual input (Key Metrics, Next Actions, Technology/Business, Out of Office) are left empty for you to fill in Google Docs after the upload.
-
 ## Prerequisites
 
 - A VPS with Docker and Docker Compose installed
@@ -263,8 +261,8 @@ The image uses a 3-stage build:
 | Stage | Base | Purpose |
 |---|---|---|
 | `go-builder` | `golang:1.26.1` | Compiles the Go binary (static, CGO disabled) |
-| `gws-downloader` | `alpine:3.21` | Downloads the gws pre-built binary |
-| runtime | `gcr.io/distroless/base-debian12` | Minimal runtime (~20 MiB image) |
+| `downloader` | `alpine:3.21` | Downloads the gws pre-built binary |
+| runtime | `gcr.io/distroless/static-debian12` | Minimal static runtime (~2 MiB base image; final image adds the Go binary and `gws`) |
 
 The distroless runtime has no shell or package manager, reducing the attack surface.
 
