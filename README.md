@@ -10,9 +10,12 @@ Each run executes a pipeline:
 2. Searches Gmail for the weekly report email from the agent and extracts the Google Doc ID
 3. Fetches GitHub PRs you authored and reviewed during the week (via GraphQL)
 4. Fetches your Google Calendar events for the week
-5. Renders a markdown report from the collected data
-6. Uploads the report to the Google Doc via the [`gws` CLI](https://github.com/googleworkspace/cli)
-7. Cleans up the temporary file
+5. Fetches Google Chat messages for Key Metrics (optional)
+6. Fetches Hacker News technology highlights via LLM (optional)
+7. Renders a markdown report from the collected data
+8. Uploads the report to the Google Doc via the [`gws` CLI](https://github.com/googleworkspace/cli)
+9. Sends Discord webhook notifications if configured (optional)
+10. Cleans up the temporary file
 
 ## Report output
 
@@ -326,12 +329,16 @@ go test ./internal/sources/gmail/... -v
 cmd/reporter/main.go              # entrypoint
 internal/
   config/                         # environment variable loading
+  notifier/                       # Discord webhook notifications
   pipeline/                       # DataSource interface, WeekRange, Runner
   gws/                            # gws CLI executor wrapper
+  llm/                            # LLM provider integration for Technology Highlights
   sources/
     gmail/                        # Gmail source (finds Google Doc ID)
     github/                       # GitHub GraphQL source (authored + reviewed PRs)
     calendar/                     # Calendar source (weekly events)
+    gchat/                        # Google Chat source (Key Metrics / OMTM)
+    hackernews/                   # Hacker News source (Technology Highlights)
   uploader/drive/                 # Google Drive uploader
   report/                         # markdown template renderer
 Dockerfile
