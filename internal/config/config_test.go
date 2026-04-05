@@ -188,3 +188,64 @@ func TestLoad_LLMConfiguration(t *testing.T) {
 		t.Errorf("LLMModel = %v, want gpt-4", cfg.LLMModel)
 	}
 }
+
+func TestLoad_DiscordConfig(t *testing.T) {
+	// Set required vars
+	t.Setenv("GITHUB_TOKEN", "ghp_test")
+	t.Setenv("GITHUB_USERNAME", "testuser")
+	t.Setenv("GWS_EMAIL_SENDER", "agent@example.com")
+	t.Setenv("REPORT_NAME", "Test User")
+	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
+	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
+
+	t.Setenv("DISCORD_WEBHOOK_URL", "https://discord.com/api/webhooks/123/abc")
+	t.Setenv("DISCORD_TIMEOUT", "60")
+	t.Setenv("DISCORD_RETRY_COUNT", "3")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if cfg.DiscordWebhookURL != "https://discord.com/api/webhooks/123/abc" {
+		t.Errorf("DiscordWebhookURL: expected webhook URL, got %q", cfg.DiscordWebhookURL)
+	}
+
+	if cfg.DiscordTimeout != 60 {
+		t.Errorf("DiscordTimeout: expected 60, got %d", cfg.DiscordTimeout)
+	}
+
+	if cfg.DiscordRetryCount != 3 {
+		t.Errorf("DiscordRetryCount: expected 3, got %d", cfg.DiscordRetryCount)
+	}
+}
+
+func TestLoad_DiscordDefaults(t *testing.T) {
+	// Set required vars
+	t.Setenv("GITHUB_TOKEN", "ghp_test")
+	t.Setenv("GITHUB_USERNAME", "testuser")
+	t.Setenv("GWS_EMAIL_SENDER", "agent@example.com")
+	t.Setenv("REPORT_NAME", "Test User")
+	t.Setenv("GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE", "/tmp/creds.json")
+	t.Setenv("GWS_CHAT_SPACES_ID", "AAQAE4zqbX4")
+	t.Setenv("GWS_CHAT_SENDER_NAME", "users/102650500894334129637")
+	// Don't set any Discord env vars
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if cfg.DiscordWebhookURL != "" {
+		t.Errorf("DiscordWebhookURL: expected empty, got %q", cfg.DiscordWebhookURL)
+	}
+
+	if cfg.DiscordTimeout != 30 {
+		t.Errorf("DiscordTimeout: expected default 30, got %d", cfg.DiscordTimeout)
+	}
+
+	if cfg.DiscordRetryCount != 1 {
+		t.Errorf("DiscordRetryCount: expected default 1, got %d", cfg.DiscordRetryCount)
+	}
+}

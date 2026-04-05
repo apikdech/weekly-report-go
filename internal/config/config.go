@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -27,6 +28,10 @@ type Config struct {
 	LLMAPIKey string
 	// LLMModel is the model name for the LLM provider.
 	LLMModel string
+	// Discord configuration
+	DiscordWebhookURL string
+	DiscordTimeout    int
+	DiscordRetryCount int
 }
 
 // Load reads configuration from environment variables.
@@ -56,6 +61,23 @@ func Load() (*Config, error) {
 	cfg.LLMBaseURL = os.Getenv("LLM_BASE_URL")
 	cfg.LLMAPIKey = os.Getenv("LLM_API_KEY")
 	cfg.LLMModel = os.Getenv("LLM_MODEL")
+
+	// Discord configuration (optional)
+	cfg.DiscordWebhookURL = os.Getenv("DISCORD_WEBHOOK_URL")
+	cfg.DiscordTimeout = 30   // default
+	cfg.DiscordRetryCount = 1 // default
+
+	if v := os.Getenv("DISCORD_TIMEOUT"); v != "" {
+		if timeout, err := strconv.Atoi(v); err == nil && timeout > 0 {
+			cfg.DiscordTimeout = timeout
+		}
+	}
+
+	if v := os.Getenv("DISCORD_RETRY_COUNT"); v != "" {
+		if retry, err := strconv.Atoi(v); err == nil && retry >= 0 {
+			cfg.DiscordRetryCount = retry
+		}
+	}
 
 	type requiredVar struct {
 		name string
