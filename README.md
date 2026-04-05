@@ -133,6 +133,9 @@ Add this to the VPS crontab (`crontab -e`) to run every Monday at 09:00:
 | `REPORT_TIMEZONE` | No | `UTC` | Timezone for week range calculation (e.g. `Asia/Jakarta`) |
 | `TEMP_DIR` | No | `/tmp` | Directory for the temporary `report.md` file |
 | `GWS_BIN_PATH` | No | `gws` | Path to the gws binary (resolved from `PATH` by default) |
+| `DISCORD_WEBHOOK_URL` | No | — | Discord webhook URL for notifications |
+| `DISCORD_TIMEOUT` | No | `30` | HTTP timeout for Discord webhook in seconds |
+| `DISCORD_RETRY_COUNT` | No | `1` | Retries on Discord webhook failure |
 
 ## LLM Configuration (for Technology Highlights)
 
@@ -209,6 +212,46 @@ LLM_BASE_URL=https://api.moonshot.cn/v1
 LLM_API_KEY=your-kimi-key
 LLM_MODEL=kimi-k2-5-turbo
 ```
+
+## Discord Webhook Notifications
+
+The application can send notifications to a Discord channel when report generation starts, fails, or completes.
+
+### Setup
+
+1. Create a Discord webhook in your server:
+   - Go to Server Settings → Integrations → Webhooks
+   - Click "New Webhook", choose a channel, and copy the webhook URL
+
+2. Add the webhook URL to your `.env`:
+
+```bash
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
+```
+
+### Notification Types
+
+Three types of notifications are sent as rich Discord embeds:
+
+1. **Start** (Blue) - When report generation begins
+2. **Failed** (Red) - When an error occurs
+3. **Finished** (Green) - When report is successfully uploaded to Google Docs
+
+The Finished notification includes:
+- Link to the Google Document
+- The markdown report file attached (respecting Discord's 25MB limit)
+
+### Configuration Options
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DISCORD_WEBHOOK_URL` | No | "" | Discord webhook URL. If empty, notifications are disabled |
+| `DISCORD_TIMEOUT` | No | "30" | HTTP client timeout in seconds |
+| `DISCORD_RETRY_COUNT` | No | "1" | Number of retries on webhook failure |
+
+### Error Handling
+
+Discord webhook failures are logged as warnings but never block the main report generation pipeline. If the webhook is temporarily unavailable or the attachment is too large (>25MB), notifications will be gracefully skipped.
 
 ## Docker
 
