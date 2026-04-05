@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -138,11 +139,17 @@ func (d *DiscordHandler) Supports(eventType string) bool {
 func (d *DiscordHandler) Handle(event NotificationEvent) {
 	switch e := event.(type) {
 	case *StartEvent:
-		d.sendEmbed(buildStartEmbed(e))
+		if err := d.sendEmbed(buildStartEmbed(e)); err != nil {
+			log.Printf("[discord] failed to send start notification: %v", err)
+		}
 	case *FailedEvent:
-		d.sendEmbed(buildFailedEmbed(e))
+		if err := d.sendEmbed(buildFailedEmbed(e)); err != nil {
+			log.Printf("[discord] failed to send failed notification: %v", err)
+		}
 	case *FinishedEvent:
-		d.sendFinishedWithAttachment(e)
+		if err := d.sendFinishedWithAttachment(e); err != nil {
+			log.Printf("[discord] failed to send finished notification: %v", err)
+		}
 	}
 }
 
@@ -197,7 +204,7 @@ func (d *DiscordHandler) sendWithRetry(jsonData []byte, fileData []byte) error {
 
 	for attempt := 0; attempt <= d.retryCount; attempt++ {
 		if attempt > 0 {
-			time.Sleep(time.Duration(attempt) * time.Second) // Exponential backoff
+			time.Sleep(time.Duration(attempt) * time.Second) // Linear backoff (1s, 2s, 3s...)
 		}
 
 		err := d.doRequest(jsonData)
