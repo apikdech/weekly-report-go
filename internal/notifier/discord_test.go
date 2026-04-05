@@ -1,6 +1,11 @@
 package notifier
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -102,4 +107,104 @@ func TestBuildFinishedEmbed(t *testing.T) {
 	if len(embed.Fields) != 3 {
 		t.Errorf("Fields: expected 3 fields, got %d", len(embed.Fields))
 	}
+}
+
+func TestDiscordHandler_Supports(t *testing.T) {
+	handler := NewDiscordHandler("https://discord.com/api/webhooks/123/abc", 30, 1)
+
+	if !handler.Supports("start") {
+		t.Error("should support 'start' events")
+	}
+	if !handler.Supports("failed") {
+		t.Error("should support 'failed' events")
+	}
+	if !handler.Supports("finished") {
+		t.Error("should support 'finished' events")
+	}
+	if handler.Supports("unknown") {
+		t.Error("should not support 'unknown' events")
+	}
+}
+
+func TestDiscordHandler_Handle_StartEvent(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("expected POST, got %s", r.Method)
+		}
+
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "application/json" {
+			t.Errorf("expected application/json, got %s", contentType)
+		}
+
+		var payload DiscordWebhookPayload
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("failed to decode payload: %v", err)
+		}
+
+		if len(payload.Embeds) != 1 {
+			t.Errorf("expected 1 embed, got %d", len(payload.Embeds))
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	handler := NewDiscordHandler(server.URL, 30, 0)
+	event := &StartEvent{
+		WeekRange: "22 March 2026 - 28 March 2026",
+		EventTime: time.Now(),
+	}
+
+	handler.Handle(event)
+}
+
+func TestDiscordHandler_Handle_FinishedEvent_WithAttachment(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		contentType := r.Header.Get("Content-Type")
+		if !strings.Contains(contentType, "multipart/form-data") {
+			t.Errorf("expected multipart/form-data, got %s", contentType)
+		}
+
+		// Parse multipart form
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			t.Fatalf("failed to parse multipart form: %v", err)
+		}
+
+		payloadJSON := r.FormValue("payload_json")
+		if payloadJSON == "" {
+			t.Error("expected payload_json field")
+		}
+
+		file, _, err := r.FormFile("file")
+		if err != nil {
+			t.Errorf("expected file field: %v", err)
+		} else {
+			file.Close()
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	// Create temp file
+	tmpFile, err := os.CreateTemp("", "report-*.md")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	tmpFile.WriteString("# Test Report")
+	tmpFile.Close()
+
+	handler := NewDiscordHandler(server.URL, 30, 0)
+	event := &FinishedEvent{
+		WeekRange:  "22 March 2026 - 28 March 2026",
+		DocID:      "abc123",
+		DocURL:     "https://docs.google.com/document/d/abc123/edit",
+		ReportPath: tmpFile.Name(),
+		EventTime:  time.Now(),
+	}
+
+	handler.Handle(event)
 }
