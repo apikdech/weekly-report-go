@@ -40,6 +40,42 @@ func TestBuildStartEmbed(t *testing.T) {
 	}
 }
 
+func TestBuildProcessingEmbed(t *testing.T) {
+	event := &ProcessingEvent{
+		WeekRange: "22 March 2026 - 28 March 2026",
+		Stage:     "Rendering markdown report",
+		EventTime: time.Date(2026, 3, 28, 9, 15, 0, 0, time.UTC),
+	}
+
+	embed := buildProcessingEmbed(event)
+
+	if embed.Title != "⏳ Weekly Report — In Progress" {
+		t.Errorf("Title: expected processing message, got %q", embed.Title)
+	}
+
+	if embed.Color != 0xf39c12 {
+		t.Errorf("Color: expected orange (0xf39c12), got 0x%x", embed.Color)
+	}
+
+	if len(embed.Fields) != 3 {
+		t.Errorf("Fields: expected 3 fields, got %d", len(embed.Fields))
+	}
+}
+
+func TestBuildProcessingEmbed_OmitsEmptyStage(t *testing.T) {
+	event := &ProcessingEvent{
+		WeekRange: "Week",
+		Stage:     "",
+		EventTime: time.Date(2026, 3, 28, 9, 15, 0, 0, time.UTC),
+	}
+
+	embed := buildProcessingEmbed(event)
+
+	if len(embed.Fields) != 2 {
+		t.Errorf("Fields: expected 2 fields when Stage empty, got %d", len(embed.Fields))
+	}
+}
+
 func TestBuildFailedEmbed(t *testing.T) {
 	event := &FailedEvent{
 		WeekRange: "22 March 2026 - 28 March 2026",
@@ -112,17 +148,20 @@ func TestBuildFinishedEmbed(t *testing.T) {
 func TestDiscordHandler_Supports(t *testing.T) {
 	handler := NewDiscordHandler("https://discord.com/api/webhooks/123/abc", 30, 1)
 
-	if !handler.Supports("start") {
-		t.Error("should support 'start' events")
+	if !handler.Supports(EventTypeStart) {
+		t.Error("should support start events")
 	}
-	if !handler.Supports("failed") {
-		t.Error("should support 'failed' events")
+	if !handler.Supports(EventTypeProcessing) {
+		t.Error("should support processing events")
 	}
-	if !handler.Supports("finished") {
-		t.Error("should support 'finished' events")
+	if !handler.Supports(EventTypeFailed) {
+		t.Error("should support failed events")
 	}
-	if handler.Supports("unknown") {
-		t.Error("should not support 'unknown' events")
+	if !handler.Supports(EventTypeFinished) {
+		t.Error("should support finished events")
+	}
+	if handler.Supports(EventType("unknown")) {
+		t.Error("should not support unknown events")
 	}
 }
 
@@ -153,6 +192,25 @@ func TestDiscordHandler_Handle_StartEvent(t *testing.T) {
 	handler := NewDiscordHandler(server.URL, 30, 0)
 	event := &StartEvent{
 		WeekRange: "22 March 2026 - 28 March 2026",
+		EventTime: time.Now(),
+	}
+
+	handler.Handle(event)
+}
+
+func TestDiscordHandler_Handle_ProcessingEvent(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("expected POST, got %s", r.Method)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	handler := NewDiscordHandler(server.URL, 30, 0)
+	event := &ProcessingEvent{
+		WeekRange: "22 March 2026 - 28 March 2026",
+		Stage:     "Rendering",
 		EventTime: time.Now(),
 	}
 

@@ -103,6 +103,12 @@ func run() error {
 		return fmt.Errorf("pipeline: %w", err)
 	}
 
+	emitter.Emit(&notifier.ProcessingEvent{
+		WeekRange: week.HeaderLabel(),
+		Stage:     "Rendering markdown report",
+		EventTime: time.Now(),
+	})
+
 	// 7. Render markdown
 	markdown, err := report.Render(reportData)
 	if err != nil {

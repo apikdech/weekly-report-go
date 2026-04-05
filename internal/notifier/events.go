@@ -2,9 +2,19 @@ package notifier
 
 import "time"
 
+// EventType identifies a notification event kind for handler routing.
+type EventType string
+
+const (
+	EventTypeStart      EventType = "start"
+	EventTypeProcessing EventType = "processing"
+	EventTypeFailed     EventType = "failed"
+	EventTypeFinished   EventType = "finished"
+)
+
 // NotificationEvent is the base interface for all notification events
 type NotificationEvent interface {
-	Type() string
+	Type() EventType
 	Timestamp() time.Time
 }
 
@@ -14,8 +24,18 @@ type StartEvent struct {
 	EventTime time.Time
 }
 
-func (e *StartEvent) Type() string         { return "start" }
+func (e *StartEvent) Type() EventType      { return EventTypeStart }
 func (e *StartEvent) Timestamp() time.Time { return e.EventTime }
+
+// ProcessingEvent is emitted between major pipeline phases (e.g. after data collection, before upload).
+type ProcessingEvent struct {
+	WeekRange string
+	Stage     string
+	EventTime time.Time
+}
+
+func (e *ProcessingEvent) Type() EventType      { return EventTypeProcessing }
+func (e *ProcessingEvent) Timestamp() time.Time { return e.EventTime }
 
 // FailedEvent is emitted when pipeline fails
 type FailedEvent struct {
@@ -24,7 +44,7 @@ type FailedEvent struct {
 	EventTime time.Time
 }
 
-func (e *FailedEvent) Type() string         { return "failed" }
+func (e *FailedEvent) Type() EventType      { return EventTypeFailed }
 func (e *FailedEvent) Timestamp() time.Time { return e.EventTime }
 
 // FinishedEvent is emitted when report is successfully uploaded
@@ -36,13 +56,13 @@ type FinishedEvent struct {
 	EventTime  time.Time
 }
 
-func (e *FinishedEvent) Type() string         { return "finished" }
+func (e *FinishedEvent) Type() EventType      { return EventTypeFinished }
 func (e *FinishedEvent) Timestamp() time.Time { return e.EventTime }
 
 // EventHandler handles notification events
 type EventHandler interface {
 	Handle(event NotificationEvent)
-	Supports(eventType string) bool
+	Supports(eventType EventType) bool
 }
 
 // EventEmitter dispatches events to registered handlers

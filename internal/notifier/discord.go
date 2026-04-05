@@ -55,6 +55,36 @@ func buildStartEmbed(event *StartEvent) DiscordEmbed {
 	}
 }
 
+// buildProcessingEmbed creates an embed for processing events
+func buildProcessingEmbed(event *ProcessingEvent) DiscordEmbed {
+	fields := []DiscordEmbedField{
+		{
+			Name:   "Week Range",
+			Value:  event.WeekRange,
+			Inline: true,
+		},
+	}
+	if event.Stage != "" {
+		fields = append(fields, DiscordEmbedField{
+			Name:   "Stage",
+			Value:  event.Stage,
+			Inline: false,
+		})
+	}
+	fields = append(fields, DiscordEmbedField{
+		Name:   "Updated At",
+		Value:  event.Timestamp().Format(time.RFC3339),
+		Inline: false,
+	})
+
+	return DiscordEmbed{
+		Title:     "⏳ Weekly Report — In Progress",
+		Color:     0xf39c12, // Orange
+		Fields:    fields,
+		Timestamp: event.Timestamp().Format(time.RFC3339),
+	}
+}
+
 // buildFailedEmbed creates an embed for failed events
 func buildFailedEmbed(event *FailedEvent) DiscordEmbed {
 	errorMsg := event.Error.Error()
@@ -131,8 +161,13 @@ func NewDiscordHandler(webhookURL string, timeout, retryCount int) *DiscordHandl
 }
 
 // Supports returns true for all notification event types
-func (d *DiscordHandler) Supports(eventType string) bool {
-	return eventType == "start" || eventType == "failed" || eventType == "finished"
+func (d *DiscordHandler) Supports(eventType EventType) bool {
+	switch eventType {
+	case EventTypeStart, EventTypeProcessing, EventTypeFailed, EventTypeFinished:
+		return true
+	default:
+		return false
+	}
 }
 
 // Handle processes the event and sends it to Discord
@@ -141,6 +176,10 @@ func (d *DiscordHandler) Handle(event NotificationEvent) {
 	case *StartEvent:
 		if err := d.sendEmbed(buildStartEmbed(e)); err != nil {
 			log.Printf("[discord] failed to send start notification: %v", err)
+		}
+	case *ProcessingEvent:
+		if err := d.sendEmbed(buildProcessingEmbed(e)); err != nil {
+			log.Printf("[discord] failed to send processing notification: %v", err)
 		}
 	case *FailedEvent:
 		if err := d.sendEmbed(buildFailedEmbed(e)); err != nil {
