@@ -37,6 +37,10 @@ func TestFailedEvent_ImplementsInterface(t *testing.T) {
 	if event.Type() != "failed" {
 		t.Errorf("expected Type() to return 'failed', got %q", event.Type())
 	}
+
+	if !event.Timestamp().Equal(time.Date(2026, 3, 28, 9, 15, 0, 0, time.UTC)) {
+		t.Errorf("Timestamp() returned unexpected value")
+	}
 }
 
 func TestFinishedEvent_ImplementsInterface(t *testing.T) {
@@ -52,5 +56,9 @@ func TestFinishedEvent_ImplementsInterface(t *testing.T) {
 
 	if event.Type() != "finished" {
 		t.Errorf("expected Type() to return 'finished', got %q", event.Type())
+	}
+
+	if !event.Timestamp().Equal(time.Date(2026, 3, 28, 9, 15, 0, 0, time.UTC)) {
+		t.Errorf("Timestamp() returned unexpected value")
 	}
 }
