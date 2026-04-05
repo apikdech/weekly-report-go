@@ -50,7 +50,7 @@ func Load() (*Config, error) {
 	}
 
 	if cfg.ReportTimezone == "" {
-		cfg.ReportTimezone = "UTC"
+		cfg.ReportTimezone = "Asia/Jakarta"
 	}
 	if cfg.TempDir == "" {
 		cfg.TempDir = "/tmp"

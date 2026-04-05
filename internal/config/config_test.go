@@ -53,8 +53,8 @@ func TestLoad_Defaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.ReportTimezone != "UTC" {
-		t.Errorf("expected default timezone UTC, got %q", cfg.ReportTimezone)
+	if cfg.ReportTimezone != "Asia/Jakarta" {
+		t.Errorf("expected default timezone Asia/Jakarta, got %q", cfg.ReportTimezone)
 	}
 	if cfg.TempDir != "/tmp" {
 		t.Errorf("expected default TempDir=/tmp, got %q", cfg.TempDir)
