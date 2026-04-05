@@ -13,6 +13,7 @@ import (
 	"github.com/apikdech/gws-weekly-report/internal/llm"
 	"github.com/apikdech/gws-weekly-report/internal/pipeline"
 	anyllm "github.com/mozilla-ai/any-llm-go"
+	"github.com/mozilla-ai/any-llm-go/providers"
 )
 
 // Source fetches top technical articles from Hacker News for the week.
@@ -124,15 +125,56 @@ func (s *Source) analyzeWithLLM(ctx context.Context, articles []HNArticle) ([]pi
 		return nil, fmt.Errorf("marshal articles: %w", err)
 	}
 
-	// Prepare prompt
+	// Prepare prompt - no need to ask for JSON format explicitly as ResponseFormat enforces it
 	fullPrompt := llm.PromptTemplate + "\n\nArticles JSON:\n" + string(inputJSON)
 
-	log.Printf("[hackernews] Sending request to LLM provider %s with model %s", s.provider.Name(), s.model)
-	// Use any-llm-go for completion
+	// Define the JSON schema for structured output
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"articles": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type": "object",
+					"properties": map[string]any{
+						"title": map[string]any{
+							"type":        "string",
+							"description": "The original article title",
+						},
+						"url": map[string]any{
+							"type":        "string",
+							"description": "The original article URL",
+						},
+						"highlights": map[string]any{
+							"type":        "string",
+							"description": "2-3 sentence summary with bullet points of technical details",
+						},
+					},
+					"required": []string{"title", "url", "highlights"},
+				},
+			},
+		},
+		"required": []string{"articles"},
+	}
+
+	strict := true
+	log.Printf("[hackernews] Sending request to LLM provider %s with model %s (structured JSON output)", s.provider.Name(), s.model)
+
+	// Use any-llm-go for completion with structured JSON output
 	response, err := s.provider.Completion(ctx, anyllm.CompletionParams{
 		Model: s.model,
 		Messages: []anyllm.Message{
 			{Role: anyllm.RoleUser, Content: fullPrompt},
+		},
+		// Use structured JSON output - this enforces the LLM to return valid JSON matching our schema
+		ResponseFormat: &providers.ResponseFormat{
+			Type: "json_schema",
+			JSONSchema: &providers.JSONSchema{
+				Name:        "article_analysis",
+				Description: "Analysis of technical Hacker News articles",
+				Schema:      schema,
+				Strict:      &strict,
+			},
 		},
 	})
 	if err != nil {
@@ -143,16 +185,12 @@ func (s *Source) analyzeWithLLM(ctx context.Context, articles []HNArticle) ([]pi
 		return nil, fmt.Errorf("empty response from LLM")
 	}
 
-	// Extract JSON from response text
-	responseText, ok := response.Choices[0].Message.Content.(string)
-	if !ok {
-		return nil, fmt.Errorf("unexpected response content type")
-	}
-	jsonStr := llm.ExtractJSONFromMarkdown(responseText)
+	// With structured output, the response is guaranteed to be valid JSON matching our schema
+	responseText := response.Choices[0].Message.ContentString()
 
-	// Parse the result
+	// Parse the result directly - no need for manual JSON extraction from markdown
 	var result articleResult
-	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
+	if err := json.Unmarshal([]byte(responseText), &result); err != nil {
 		return nil, fmt.Errorf("parse LLM result: %w", err)
 	}
 
