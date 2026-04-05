@@ -38,3 +38,35 @@ type FinishedEvent struct {
 
 func (e *FinishedEvent) Type() string         { return "finished" }
 func (e *FinishedEvent) Timestamp() time.Time { return e.EventTime }
+
+// EventHandler handles notification events
+type EventHandler interface {
+	Handle(event NotificationEvent)
+	Supports(eventType string) bool
+}
+
+// EventEmitter dispatches events to registered handlers
+type EventEmitter struct {
+	handlers []EventHandler
+}
+
+// NewEventEmitter creates a new event emitter
+func NewEventEmitter() *EventEmitter {
+	return &EventEmitter{
+		handlers: make([]EventHandler, 0),
+	}
+}
+
+// Register adds a handler to the emitter
+func (e *EventEmitter) Register(handler EventHandler) {
+	e.handlers = append(e.handlers, handler)
+}
+
+// Emit sends an event to all registered handlers that support it
+func (e *EventEmitter) Emit(event NotificationEvent) {
+	for _, handler := range e.handlers {
+		if handler.Supports(event.Type()) {
+			handler.Handle(event)
+		}
+	}
+}
