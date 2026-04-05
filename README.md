@@ -1,5 +1,14 @@
 # GWS Weekly Report
 
+## Quick Start
+
+Choose your deployment method:
+
+- **[GitHub Actions (Recommended for simplicity)](examples/github-actions/)** - Run entirely on GitHub. No VPS needed. Just configure secrets and you're done.
+- **[VPS with Docker](README.md#setup)** - Run on your own server with full control.
+
+---
+
 A Go tool that automatically generates your weekly report and uploads it to Google Docs. Runs as a Docker container via crontab on a VPS.
 
 ## How it works
