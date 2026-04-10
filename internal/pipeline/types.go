@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+// dateFormatLayout is the Go time layout for labels like "02 March 2026" (day with leading zero).
+const dateFormatLayout = "02 January 2006"
+
 // WeekRange represents an inclusive Sunday-to-Saturday date range.
 type WeekRange struct {
 	Start time.Time // Sunday 00:00:00
@@ -22,14 +25,14 @@ func WeekRangeFor(t time.Time, loc *time.Location) WeekRange {
 	return WeekRange{Start: sunday, End: saturday}
 }
 
-// EmailDateLabel returns the start date formatted for Gmail search, e.g. "22 March 2026".
+// EmailDateLabel returns the start date formatted for Gmail search, e.g. "02 March 2026".
 func (w WeekRange) EmailDateLabel() string {
-	return w.Start.Format("2 January 2006")
+	return w.Start.Format(dateFormatLayout)
 }
 
-// HeaderLabel returns the date range for the report header, e.g. "22 March 2026 - 28 March 2026".
+// HeaderLabel returns the date range for the report header, e.g. "02 March 2026 - 08 March 2026".
 func (w WeekRange) HeaderLabel() string {
-	return fmt.Sprintf("%s - %s", w.Start.Format("2 January 2006"), w.End.Format("2 January 2006"))
+	return fmt.Sprintf("%s - %s", w.Start.Format(dateFormatLayout), w.End.Format(dateFormatLayout))
 }
 
 // ReportData holds all collected data used to render the weekly report.

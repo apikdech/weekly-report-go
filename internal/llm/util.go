@@ -28,6 +28,7 @@ Fetch all URLs in parallel before writing any summaries. Do not wait for one fet
   [add a 4th or 5th bullet only if genuinely distinct and useful]
 
 **Highlights rules:**
+- Formatting: put the 2-3 sentence summary first, then a newline, then each bullet on its own line starting with • (summary and bullets must not run together on one line)
 - Summary lines: what the piece covers + the core technical insight or claim
 - Bullets: concrete specifics — benchmark numbers, architecture decisions, failure modes, API design choices, surprising tradeoffs. No filler like "well written" or "worth reading"
 - Max 5 bullets. If you can't find 2 meaningful bullets, the article likely doesn't qualify
