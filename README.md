@@ -64,20 +64,39 @@ Each run executes a pipeline:
 
 ### 1. Authenticate gws locally
 
-Install and authenticate the `gws` CLI on your **local machine**:
+It is recommended to use your personal account for the `gws` CLI. Follow these steps:
 
-```bash
-npm install -g @googleworkspace/cli
-gws auth setup   # one-time: creates GCP project, enables APIs, logs you in
-```
-
-### 2. Export credentials for headless use
-
-```bash
-gws auth export --unmasked > credentials.json
-```
-
-This file will be volume-mounted into the Docker container. Keep it secret — do not commit it.
+1. **Start setup:** `gws auth setup`
+2. **Login:** Use your personal Google account.
+3. **Project:** Create a new project or select an existing one in the Google Cloud Console.
+4. **Enable APIs:** Enable the following APIs in your Google Cloud project:
+   - Google Drive API
+   - Gmail API
+   - Google Calendar API
+   - Google Docs API
+   - Google Chat API
+5. **Configure Chat App:** If you plan to use the Chat API, you must configure the app in the Google Cloud console.
+6. **Login with scopes:**
+   ```bash
+   gws auth login --scopes \
+   "https://www.googleapis.com/auth/drive,\
+   https://www.googleapis.com/auth/gmail.modify,\
+   https://www.googleapis.com/auth/documents,\
+   https://www.googleapis.com/auth/calendar,\
+   https://www.googleapis.com/auth/spreadsheets,\
+   https://www.googleapis.com/auth/cloud-platform,\
+   openid,\
+   https://www.googleapis.com/auth/userinfo.email,\
+   https://www.googleapis.com/auth/userinfo.profile,\
+   https://www.googleapis.com/auth/chat.spaces.readonly,\
+   https://www.googleapis.com/auth/chat.messages.readonly,\
+   https://www.googleapis.com/auth/chat.memberships.readonly"
+   ```
+7. **Export credentials:** Export your credentials for headless use:
+   ```bash
+   gws auth export --unmasked > credentials.json
+   ```
+   *Keep this file secret — do not commit it.*
 
 ### 3. Clone and configure
 

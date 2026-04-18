@@ -86,7 +86,8 @@ func (s *Source) Fetch(ctx context.Context, week pipeline.WeekRange) error {
 
 	out, err := s.executor.Run(ctx, "chat", "spaces", "messages", "list", "--params", params)
 	if err != nil {
-		return fmt.Errorf("gchat messages list: %w", err)
+		log.Printf("[gchat] error listing messages: %v", err)
+		return nil
 	}
 
 	text, err := PickLatestBySender(out, s.senderName)
@@ -101,7 +102,8 @@ func (s *Source) Fetch(ctx context.Context, week pipeline.WeekRange) error {
 // Contribute sets KeyMetrics on the report. A missing message is not an error.
 func (s *Source) Contribute(report *pipeline.ReportData) error {
 	if !s.fetched {
-		return fmt.Errorf("gchat source: Contribute called before Fetch")
+		log.Printf("[gchat] error contributing: Contribute called before Fetch")
+		return nil
 	}
 	report.KeyMetrics = s.keyMetrics
 	return nil

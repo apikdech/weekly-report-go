@@ -1,5 +1,6 @@
 .env
-credentials.json
+# File prefix with credentials* .json
+credentials*.json
 /tmp/
 *.log
 /reporter
