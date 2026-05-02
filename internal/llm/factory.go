@@ -22,7 +22,7 @@ func NewProvider(cfg *config.Config) (anyllm.Provider, error) {
 	}
 
 	opts := []anyllm.Option{anyllm.WithAPIKey(cfg.LLMAPIKey)}
-	if pType == OpenAI && cfg.LLMBaseURL != "" {
+	if (pType == OpenAI || pType == Ollama) && cfg.LLMBaseURL != "" {
 		opts = append(opts, anyllm.WithBaseURL(cfg.LLMBaseURL))
 	}
 
