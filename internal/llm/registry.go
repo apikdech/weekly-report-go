@@ -6,6 +6,7 @@ import (
 	"github.com/mozilla-ai/any-llm-go/providers/deepseek"
 	"github.com/mozilla-ai/any-llm-go/providers/gemini"
 	"github.com/mozilla-ai/any-llm-go/providers/groq"
+	"github.com/mozilla-ai/any-llm-go/providers/ollama"
 	"github.com/mozilla-ai/any-llm-go/providers/openai"
 )
 
@@ -18,5 +19,6 @@ var providerRegistry = map[ProviderType]providerConstructor{
 	OpenAI:    func(o ...anyllm.Option) (anyllm.Provider, error) { return openai.New(o...) },
 	Anthropic: func(o ...anyllm.Option) (anyllm.Provider, error) { return anthropic.New(o...) },
 	Groq:      func(o ...anyllm.Option) (anyllm.Provider, error) { return groq.New(o...) },
+	Ollama:    func(o ...anyllm.Option) (anyllm.Provider, error) { return ollama.New(o...) },
 	DeepSeek:  func(o ...anyllm.Option) (anyllm.Provider, error) { return deepseek.New(o...) },
 }
