@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/apikdech/gws-weekly-report/internal/llm"
@@ -50,6 +51,9 @@ func (s *Source) Fetch(ctx context.Context, week pipeline.WeekRange) error {
 		log.Printf("[hackernews] No articles found for week %s", week.HeaderLabel())
 		return nil
 	}
+
+	// Concurrently fetch article content
+	s.enrichArticles(ctx, articles)
 
 	// Analyze with LLM to get technical articles
 	highlights, err := s.analyzeWithLLM(ctx, articles)
@@ -211,4 +215,25 @@ func (s *Source) analyzeWithLLM(ctx context.Context, articles []HNArticle) ([]pi
 func (s *Source) Contribute(report *pipeline.ReportData) error {
 	report.TechnologyHighlights = s.highlights
 	return nil
+}
+
+func (s *Source) enrichArticles(ctx context.Context, articles []HNArticle) {
+	var wg sync.WaitGroup
+	for i := range articles {
+		if articles[i].URL == "" {
+			continue
+		}
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			content, err := fetchContent(ctx, articles[idx].URL)
+			if err != nil {
+				log.Printf("[hackernews] Failed to fetch content for %s: %v", articles[idx].URL, err)
+				return
+			}
+			articles[idx].Content = content
+		}(i)
+	}
+	wg.Wait()
+	log.Printf("[hackernews] Fetched content for articles")
 }

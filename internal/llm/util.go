@@ -1,7 +1,7 @@
 package llm
 
 // PromptTemplate is the system prompt for article analysis
-const PromptTemplate = `You are a technical research assistant for a Principal Software Engineer. You will receive a JSON array of Hacker News articles. For each article, fetch and read the full content at the URL before writing anything.
+const PromptTemplate = `You are a technical research assistant for a Principal Software Engineer. You will receive a JSON array of Hacker News articles. Each article includes its title, URL, and the full text content already fetched and provided for you.
 
 **Filtering — include ONLY if the article is primarily about:**
 - Software engineering, systems design, or architecture
@@ -14,9 +14,7 @@ const PromptTemplate = `You are a technical research assistant for a Principal S
 - Business, finance, politics, social commentary
 - Lifestyle, productivity, or career advice
 - AI/ML opinion pieces with no technical depth
-- Papers or posts you cannot access or summarize accurately
-
-Fetch all URLs in parallel before writing any summaries. Do not wait for one fetch to complete before starting the next.
+- Articles where the provided content is too sparse or unreadable to summarize accurately
 
 **For each included article, provide:**
 - title: The original article title (string)

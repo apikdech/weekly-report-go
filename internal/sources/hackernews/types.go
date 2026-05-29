@@ -4,9 +4,10 @@ import "github.com/apikdech/gws-weekly-report/internal/pipeline"
 
 // HNArticle represents a single Hacker News story from the Algolia API
 type HNArticle struct {
-	Title  string `json:"title"`
-	URL    string `json:"url"`
-	Points int    `json:"points"`
+	Title   string `json:"title"`
+	URL     string `json:"url"`
+	Points  int    `json:"points"`
+	Content string `json:"content"`
 }
 
 // TechHighlight represents a single analyzed technical article
@@ -27,6 +28,7 @@ type articleResult struct {
 	Articles []struct {
 		Title      string `json:"title"`
 		URL        string `json:"url"`
+		Content    string `json:"content"`
 		Highlights string `json:"highlights"`
 	} `json:"articles"`
 }
